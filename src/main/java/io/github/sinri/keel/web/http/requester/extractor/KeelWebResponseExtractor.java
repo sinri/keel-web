@@ -3,9 +3,9 @@ package io.github.sinri.keel.web.http.requester.extractor;
 import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedResponse;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Validate the response of web requests and extract the content if validated.
@@ -15,16 +15,16 @@ import javax.annotation.Nullable;
  * @since 4.0.3
  */
 public abstract class KeelWebResponseExtractor<T> {
-    @Nonnull
+    @NotNull
     private final String requestLabel;
     private final int responseStatusCode;
     private final @Nullable Buffer responseBody;
 
-    public KeelWebResponseExtractor(@Nonnull String requestLabel, @Nonnull HttpResponse<Buffer> response) {
+    public KeelWebResponseExtractor(@NotNull String requestLabel, @NotNull HttpResponse<Buffer> response) {
         this(requestLabel, response.statusCode(), response.body());
     }
 
-    public KeelWebResponseExtractor(@Nonnull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public KeelWebResponseExtractor(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         this.requestLabel = requestLabel;
         this.responseStatusCode = responseStatusCode;
         this.responseBody = responseBody;
@@ -35,7 +35,7 @@ public abstract class KeelWebResponseExtractor<T> {
     }
 
 
-    @Nonnull
+    @NotNull
     public String getRequestLabel() {
         return requestLabel;
     }

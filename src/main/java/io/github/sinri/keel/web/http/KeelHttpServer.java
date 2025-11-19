@@ -1,37 +1,41 @@
 package io.github.sinri.keel.web.http;
 
-import io.github.sinri.keel.core.verticles.KeelVerticleImpl;
-import io.github.sinri.keel.logger.event.KeelEventLog;
-import io.github.sinri.keel.logger.issue.center.KeelIssueRecordCenter;
-import io.github.sinri.keel.logger.issue.recorder.KeelIssueRecorder;
+import io.github.sinri.keel.base.verticles.AbstractKeelVerticle;
+import io.github.sinri.keel.core.utils.ReflectionUtils;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
+import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
 
-abstract public class KeelHttpServer extends KeelVerticleImpl implements Closeable {
+abstract public class KeelHttpServer extends AbstractKeelVerticle implements Closeable {
+    private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
     public static final String CONFIG_HTTP_SERVER_PORT = "http_server_port";
     public static final String CONFIG_HTTP_SERVER_OPTIONS = "http_server_options";
     protected HttpServer server;
-    private KeelIssueRecorder<KeelEventLog> httpServerLogger;
+    private Logger httpServerLogger;
 
     protected int getHttpServerPort() {
-        return this.config().getInteger(CONFIG_HTTP_SERVER_PORT, 8080);
+        JsonObject config = this.config();
+        if (config == null) return DEFAULT_HTTP_SERVER_PORT;
+        return config.getInteger(CONFIG_HTTP_SERVER_PORT, DEFAULT_HTTP_SERVER_PORT);
     }
 
     protected HttpServerOptions getHttpServerOptions() {
-        JsonObject httpServerOptions = this.config().getJsonObject(CONFIG_HTTP_SERVER_OPTIONS);
-        if (httpServerOptions == null) {
-            return new HttpServerOptions()
-                    .setPort(getHttpServerPort());
-        } else {
-            return new HttpServerOptions(httpServerOptions);
+        JsonObject config = this.config();
+        if (config != null) {
+            JsonObject httpServerOptions = config.getJsonObject(CONFIG_HTTP_SERVER_OPTIONS);
+            if (httpServerOptions != null) {
+                return new HttpServerOptions(httpServerOptions);
+            }
         }
+        return new HttpServerOptions().setPort(getHttpServerPort());
     }
 
     protected abstract void configureRoutes(Router router);
@@ -66,7 +70,7 @@ abstract public class KeelHttpServer extends KeelVerticleImpl implements Closeab
 
     @Override
     protected Future<Void> startVerticle() {
-        this.httpServerLogger = buildHttpServerIssueRecorder();
+        this.httpServerLogger = buildHttpServerLogger();
 
         this.server = Keel.getVertx().createHttpServer(getHttpServerOptions());
 
@@ -94,22 +98,22 @@ abstract public class KeelHttpServer extends KeelVerticleImpl implements Closeab
      *
      * @since 4.1.5
      */
-    public KeelIssueRecordCenter getIssueRecordCenter() {
-        return KeelIssueRecordCenter.outputCenter();
+    public LoggerFactory getLoggerFactory() {
+        return Keel.getLoggerFactory();
     }
 
     /**
      * @since 4.0.2
      */
-    @Nonnull
-    protected KeelIssueRecorder<KeelEventLog> buildHttpServerIssueRecorder() {
-        return getIssueRecordCenter().generateIssueRecorder("KeelHttpServer", KeelEventLog::new);
+    @NotNull
+    protected final Logger buildHttpServerLogger() {
+        return getLoggerFactory().createLogger("KeelHttpServer");
     }
 
     /**
      * @since 4.0.2
      */
-    public KeelIssueRecorder<KeelEventLog> getHttpServerLogger() {
+    public Logger getHttpServerLogger() {
         return httpServerLogger;
     }
 
@@ -141,7 +145,7 @@ abstract public class KeelHttpServer extends KeelVerticleImpl implements Closeab
      */
     public Future<String> deployMe() {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
-        if (Keel.reflectionHelper().isVirtualThreadsAvailable()) {
+        if (ReflectionUtils.isVirtualThreadsAvailable()) {
             deploymentOptions.setThreadingModel(ThreadingModel.VIRTUAL_THREAD);
         }
         return super.deployMe(deploymentOptions);

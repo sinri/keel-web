@@ -1,10 +1,10 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.core.json.UnmodifiableJsonifiableEntityImpl;
+import io.github.sinri.keel.base.json.UnmodifiableJsonifiableEntityImpl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -13,11 +13,11 @@ import java.util.Objects;
  */
 abstract public class AbstractRequestBody extends UnmodifiableJsonifiableEntityImpl {
 
-    public AbstractRequestBody(@Nonnull RoutingContext routingContext) {
+    public AbstractRequestBody(@NotNull RoutingContext routingContext) {
         super(parse(routingContext));
     }
 
-    private static JsonObject parse(@Nonnull RoutingContext routingContext) {
+    private static JsonObject parse(@NotNull RoutingContext routingContext) {
         Objects.requireNonNull(routingContext);
         String contentType = routingContext.request().headers().get("Content-Type");
         if (contentType != null) {

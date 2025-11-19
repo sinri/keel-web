@@ -6,9 +6,9 @@ import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedResponse;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpResponse;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -18,16 +18,16 @@ import java.util.Objects;
  * @since 4.0.3
  */
 public class KeelWebResponseExtractorOnJsonObjectFormat extends KeelWebResponseExtractor<JsonObject> {
-    public KeelWebResponseExtractorOnJsonObjectFormat(@Nonnull String requestLabel, HttpResponse<Buffer> response) {
+    public KeelWebResponseExtractorOnJsonObjectFormat(@NotNull String requestLabel, HttpResponse<Buffer> response) {
         super(requestLabel, response);
     }
 
-    public KeelWebResponseExtractorOnJsonObjectFormat(@Nonnull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public KeelWebResponseExtractorOnJsonObjectFormat(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         super(requestLabel, responseStatusCode, responseBody);
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public JsonObject extract() throws ReceivedUnexpectedResponse {
         var responseStatusCode = getResponseStatusCode();
         var responseBody = this.getResponseBody();

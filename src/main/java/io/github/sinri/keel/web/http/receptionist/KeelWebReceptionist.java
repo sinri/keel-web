@@ -1,8 +1,8 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.logger.KeelLogLevel;
-import io.github.sinri.keel.logger.issue.center.KeelIssueRecordCenter;
-import io.github.sinri.keel.logger.issue.recorder.KeelIssueRecorder;
+import io.github.sinri.keel.logger.api.LogLevel;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
+import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
@@ -10,9 +10,9 @@ import io.vertx.core.http.impl.CookieImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -23,15 +23,15 @@ import java.util.Objects;
  * @since 3.2.0 Moved the responding error for `dealt` logging logic out of the `respondOn*` methods.
  */
 public abstract class KeelWebReceptionist {
-    private final @Nonnull RoutingContext routingContext;
-    private final @Nonnull KeelIssueRecorder<ReceptionistIssueRecord> issueRecorder;
-    private final @Nonnull KeelWebResponder responder;
+    private final @NotNull RoutingContext routingContext;
+    private final @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder;
+    private final @NotNull KeelWebResponder responder;
 
-    public KeelWebReceptionist(@Nonnull RoutingContext routingContext) {
+    public KeelWebReceptionist(@NotNull RoutingContext routingContext) {
         this.routingContext = routingContext;
-        this.issueRecorder = issueRecordCenter().generateIssueRecorder(ReceptionistIssueRecord.TopicReceptionist, () -> new ReceptionistIssueRecord(readRequestID()));
+        this.issueRecorder = issueRecordCenter().createLogger(ReceptionistIssueRecord.TopicReceptionist, () -> new ReceptionistIssueRecord(readRequestID()));
         if (isVerboseLogging()) {
-            this.issueRecorder.setVisibleLevel(KeelLogLevel.DEBUG);
+            this.issueRecorder.visibleLevel(LogLevel.DEBUG);
         }
         this.issueRecorder.info(r -> r.setRequest(
                 routingContext.request().method(),
@@ -43,8 +43,8 @@ public abstract class KeelWebReceptionist {
         this.responder = buildResponder();
     }
 
-    @Nonnull
-    public static List<String> parseWebClientIPChain(@Nonnull RoutingContext ctx) {
+    @NotNull
+    public static List<String> parseWebClientIPChain(@NotNull RoutingContext ctx) {
         // X-Forwarded-For
         JsonArray clientIPChain = new JsonArray();
         String xForwardedFor = ctx.request().getHeader("X-Forwarded-For");
@@ -61,7 +61,7 @@ public abstract class KeelWebReceptionist {
         return list;
     }
 
-    @Nonnull
+    @NotNull
     protected final RoutingContext getRoutingContext() {
         return routingContext;
     }
@@ -77,8 +77,8 @@ public abstract class KeelWebReceptionist {
      * @return return a reference of an independent KeelIssueRecordCenter instance; do not create an instance here.
      * @since 3.2.0
      */
-    @Nonnull
-    abstract protected KeelIssueRecordCenter issueRecordCenter();
+    @NotNull
+    abstract protected LoggerFactory issueRecordCenter();
 
     /**
      * @since 4.0.4
@@ -91,7 +91,7 @@ public abstract class KeelWebReceptionist {
      * @return the built KeelWebResponder instance of this class instance.
      * @since 4.0.4
      */
-    @Nonnull
+    @NotNull
     public final KeelWebResponder getResponder() {
         return responder;
     }
@@ -99,8 +99,8 @@ public abstract class KeelWebReceptionist {
     /**
      * @since 3.2.0
      */
-    @Nonnull
-    public final KeelIssueRecorder<ReceptionistIssueRecord> getIssueRecorder() {
+    @NotNull
+    public final SpecificLogger<ReceptionistIssueRecord> getIssueRecorder() {
         return issueRecorder;
     }
 
@@ -128,30 +128,30 @@ public abstract class KeelWebReceptionist {
      *
      */
     @Deprecated(since = "4.1.3", forRemoval = true)
-    protected final void respondOnFailure(@Nonnull Throwable throwable) {
+    protected final void respondOnFailure(@NotNull Throwable throwable) {
         if (throwable instanceof KeelWebApiError) {
             getResponder().respondOnFailure((KeelWebApiError) throwable);
         } else {
             getResponder().respondOnFailure(KeelWebApiError.wrap(throwable));
         }
-        getIssueRecorder().exception(throwable, r -> r.message("FAILED, TO RESPOND."));
+        getIssueRecorder().exception(throwable, "FAILED, TO RESPOND.");
     }
 
     /**
      * @since 3.0.8 mark it nullable as it might be null.
      */
-    public @Nonnull String readRequestID() {
+    public @NotNull String readRequestID() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_ID));
     }
 
     /**
      * @since 3.0.8 mark it nullable as it might be null.
      */
-    public @Nonnull Long readRequestStartTime() {
+    public @NotNull Long readRequestStartTime() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_START_TIME));
     }
 
-    public @Nonnull List<String> readRequestIPChain() {
+    public @NotNull List<String> readRequestIPChain() {
         return parseWebClientIPChain(routingContext);
     }
 
@@ -173,14 +173,14 @@ public abstract class KeelWebReceptionist {
     /**
      * @since 3.0.1
      */
-    protected void addCookie(@Nonnull String name, @Nonnull String value, Long maxAge) {
+    protected void addCookie(@NotNull String name, @NotNull String value, Long maxAge) {
         addCookie(name, value, maxAge, false);
     }
 
     /**
      * @since 3.0.1
      */
-    protected void removeCookie(@Nonnull String name) {
+    protected void removeCookie(@NotNull String name) {
         getRoutingContext().response().removeCookie(name);
     }
 }

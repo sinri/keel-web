@@ -1,13 +1,13 @@
 package io.github.sinri.keel.web.http.receptionist.responder;
 
-import io.github.sinri.keel.core.ValueBox;
-import io.github.sinri.keel.logger.KeelLogLevel;
-import io.github.sinri.keel.logger.issue.recorder.KeelIssueRecorder;
+import io.github.sinri.keel.core.utils.value.ValueBox;
+import io.github.sinri.keel.logger.api.LogLevel;
+import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
 import io.github.sinri.keel.web.http.receptionist.ReceptionistIssueRecord;
 import io.vertx.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,8 +17,8 @@ import static io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist.par
  * @since 4.0.6
  */
 public abstract class AbstractKeelWebResponder implements KeelWebResponder {
-    private final @Nonnull RoutingContext routingContext;
-    private final @Nonnull KeelIssueRecorder<ReceptionistIssueRecord> issueRecorder;
+    private final @NotNull RoutingContext routingContext;
+    private final @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder;
 
     /**
      * Constructs an AbstractKeelWebResponder instance with the given routing context and issue recorder.
@@ -27,7 +27,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @param issueRecorder  the recorder for tracking and recording issues during the processing of the request, must
      *                       not be null
      */
-    public AbstractKeelWebResponder(@Nonnull RoutingContext routingContext, @Nonnull KeelIssueRecorder<ReceptionistIssueRecord> issueRecorder) {
+    public AbstractKeelWebResponder(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder) {
         this.routingContext = routingContext;
         this.issueRecorder = issueRecorder;
     }
@@ -37,7 +37,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      *
      * @return the {@link RoutingContext} instance associated with this responder, never null
      */
-    @Nonnull
+    @NotNull
     public RoutingContext getRoutingContext() {
         return routingContext;
     }
@@ -46,11 +46,11 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * Retrieves the associated issue recorder for managing and recording issues specific to
      * {@link ReceptionistIssueRecord}.
      *
-     * @return an instance of {@link KeelIssueRecorder} configured for handling {@link ReceptionistIssueRecord},
+     * @return an instance of {@link SpecificLogger} configured for handling {@link ReceptionistIssueRecord},
      *         never null
      */
-    @Nonnull
-    public KeelIssueRecorder<ReceptionistIssueRecord> getIssueRecorder() {
+    @NotNull
+    public SpecificLogger<ReceptionistIssueRecord> getIssueRecorder() {
         return issueRecorder;
     }
 
@@ -63,8 +63,8 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      */
     @Override
     public boolean isVerboseLogging() {
-        KeelLogLevel visibleLevel = getIssueRecorder().getVisibleLevel();
-        return KeelLogLevel.DEBUG.isEnoughSeriousAs(visibleLevel);
+        LogLevel visibleLevel = getIssueRecorder().visibleLevel();
+        return LogLevel.DEBUG.isEnoughSeriousAs(visibleLevel);
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @return the request id.
      * @since 3.0.8 mark it nullable as it might be null.
      */
-    public @Nonnull String readRequestID() {
+    public @NotNull String readRequestID() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_ID));
     }
 
@@ -90,11 +90,11 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @return the request start time.
      * @since 3.0.8 mark it nullable as it might be null.
      */
-    public @Nonnull Long readRequestStartTime() {
+    public @NotNull Long readRequestStartTime() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_START_TIME));
     }
 
-    public @Nonnull List<String> readRequestIPChain() {
+    public @NotNull List<String> readRequestIPChain() {
         return parseWebClientIPChain(routingContext);
     }
 
@@ -102,7 +102,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @deprecated let this deprecated method be final.
      */
     @Deprecated(since = "4.1.0")
-    public final void respondOnFailure(@Nonnull Throwable throwable, @Nonnull ValueBox<?> dataValueBox) {
+    public final void respondOnFailure(@NotNull Throwable throwable, @NotNull ValueBox<?> dataValueBox) {
         KeelWebResponder.super.respondOnFailure(throwable, dataValueBox);
     }
 
@@ -110,7 +110,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @deprecated let this deprecated method be final.
      */
     @Deprecated(since = "4.1.0")
-    public final void respondOnFailure(@Nonnull Throwable throwable) {
+    public final void respondOnFailure(@NotNull Throwable throwable) {
         respondOnFailure(throwable, new ValueBox<>());
     }
 }

@@ -1,9 +1,9 @@
 package io.github.sinri.keel.web.http.requester.error;
 
 import io.vertx.core.buffer.Buffer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * The exception that HTTP Response Status Code is not 200.
@@ -12,11 +12,11 @@ import javax.annotation.Nullable;
  */
 public final class ReceivedAbnormalStatusResponse extends ReceivedUnexpectedResponse {
 
-    public ReceivedAbnormalStatusResponse(@Nonnull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public ReceivedAbnormalStatusResponse(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         super(requestLabel, "received response with abnormal status code (non 200)", responseStatusCode, responseBody);
     }
 
-    public ReceivedAbnormalStatusResponse(@Nonnull String requestLabel, int responseStatusCode) {
+    public ReceivedAbnormalStatusResponse(@NotNull String requestLabel, int responseStatusCode) {
         this(requestLabel, responseStatusCode, null);
     }
 }

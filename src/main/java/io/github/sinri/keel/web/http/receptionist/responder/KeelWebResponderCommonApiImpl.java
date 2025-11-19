@@ -1,21 +1,21 @@
 package io.github.sinri.keel.web.http.receptionist.responder;
 
-import io.github.sinri.keel.core.ValueBox;
-import io.github.sinri.keel.core.json.JsonifiedThrowable;
-import io.github.sinri.keel.logger.issue.recorder.KeelIssueRecorder;
+import io.github.sinri.keel.base.json.JsonifiedThrowable;
+import io.github.sinri.keel.core.utils.value.ValueBox;
+import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.receptionist.ReceptionistIssueRecord;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @since 4.0.4
  */
 public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
 
-    public KeelWebResponderCommonApiImpl(@Nonnull RoutingContext routingContext, @Nonnull KeelIssueRecorder<ReceptionistIssueRecord> issueRecorder) {
+    public KeelWebResponderCommonApiImpl(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder) {
         super(routingContext, issueRecorder);
     }
 
@@ -26,7 +26,7 @@ public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
     }
 
     @Override
-    public void respondOnFailure(@Nonnull KeelWebApiError webApiError, @Nonnull ValueBox<?> dataValueBox) {
+    public void respondOnFailure(@NotNull KeelWebApiError webApiError, @NotNull ValueBox<?> dataValueBox) {
         JsonObject resp;
         if (dataValueBox.isValueAlreadySet()) {
             resp = buildResponseBody(Code.FAILED, dataValueBox.getValue());

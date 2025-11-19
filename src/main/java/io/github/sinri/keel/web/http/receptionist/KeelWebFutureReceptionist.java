@@ -35,14 +35,15 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
                           this.getResponder().respondOnSuccess(ar.result());
                       }
                   } catch (Throwable throwable) {
-                      getIssueRecorder().exception(throwable, event -> event
-                              .message("RoutingContext has been dealt by others")
-                              .setRespondInfo(
-                                      getRoutingContext().response().getStatusCode(),
-                                      getRoutingContext().response().getStatusMessage(),
-                                      getRoutingContext().response().ended(),
-                                      getRoutingContext().response().closed()
-                              )
+                      getIssueRecorder().exception(throwable,
+                              "RoutingContext has been dealt by others",
+                              event -> event
+                                      .setRespondInfo(
+                                              getRoutingContext().response().getStatusCode(),
+                                              getRoutingContext().response().getStatusMessage(),
+                                              getRoutingContext().response().ended(),
+                                              getRoutingContext().response().closed()
+                                      )
                       );
                   }
               });

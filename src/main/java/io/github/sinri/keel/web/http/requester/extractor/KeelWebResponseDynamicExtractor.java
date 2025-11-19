@@ -5,9 +5,9 @@ import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedFormatRes
 import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedResponse;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class KeelWebResponseDynamicExtractor<T> {
     private final @Nullable String defaultRequestLabel;
     private final @Nullable Set<Integer> expectedStatusCodes;
-    private final @Nonnull Function<Buffer, T> transformer;
+    private final @NotNull Function<Buffer, T> transformer;
 
     /**
      * Constructs an instance of {@code KeelWebResponseDynamicExtractor} for processing HTTP responses
@@ -38,7 +38,7 @@ public class KeelWebResponseDynamicExtractor<T> {
      */
     public KeelWebResponseDynamicExtractor(
             @Nullable String defaultRequestLabel,
-            @Nonnull Function<Buffer, T> transformer,
+            @NotNull Function<Buffer, T> transformer,
             @Nullable Set<Integer> expectedStatusCodes
     ) {
         this.defaultRequestLabel = defaultRequestLabel;
@@ -57,7 +57,7 @@ public class KeelWebResponseDynamicExtractor<T> {
      */
     public KeelWebResponseDynamicExtractor(
             @Nullable String defaultRequestLabel,
-            @Nonnull Function<Buffer, T> transformer) {
+            @NotNull Function<Buffer, T> transformer) {
         this(defaultRequestLabel, transformer, Set.of(200));
     }
 
@@ -68,7 +68,7 @@ public class KeelWebResponseDynamicExtractor<T> {
      * @param transformer A non-null function to transform the response body {@link Buffer}
      *                    into the desired output format.
      */
-    public KeelWebResponseDynamicExtractor(@Nonnull Function<Buffer, T> transformer) {
+    public KeelWebResponseDynamicExtractor(@NotNull Function<Buffer, T> transformer) {
         this(null, transformer, Set.of(200));
     }
 
@@ -80,7 +80,7 @@ public class KeelWebResponseDynamicExtractor<T> {
      * @return the transformed result obtained from the response body
      * @throws ReceivedUnexpectedResponse if the response status code or format does not meet the expected criteria
      */
-    public T extract(@Nonnull HttpResponse<Buffer> response) throws ReceivedUnexpectedResponse {
+    public T extract(@NotNull HttpResponse<Buffer> response) throws ReceivedUnexpectedResponse {
         String requestLabel = Objects.requireNonNullElse(defaultRequestLabel, "Unlabelled");
         return this.extract(requestLabel, response);
     }
@@ -95,7 +95,7 @@ public class KeelWebResponseDynamicExtractor<T> {
      * @throws ReceivedUnexpectedResponse if the response status code is not as expected or the response body format is
      *                                    invalid
      */
-    public T extract(@Nonnull String requestLabel, @Nonnull HttpResponse<Buffer> response) throws ReceivedUnexpectedResponse {
+    public T extract(@NotNull String requestLabel, @NotNull HttpResponse<Buffer> response) throws ReceivedUnexpectedResponse {
         var responseStatusCode = response.statusCode();
         Buffer responseBody = response.body();
         if (expectedStatusCodes != null && !expectedStatusCodes.contains(responseStatusCode)) {

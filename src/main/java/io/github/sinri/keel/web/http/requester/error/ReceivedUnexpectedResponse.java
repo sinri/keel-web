@@ -2,9 +2,8 @@ package io.github.sinri.keel.web.http.requester.error;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The exception that HTTP Response is not expected.
@@ -17,7 +16,7 @@ public class ReceivedUnexpectedResponse extends RuntimeException {
     private final int responseStatusCode;
     private final @Nullable Buffer responseBody;
 
-    public ReceivedUnexpectedResponse(@Nonnull String requestLabel, @Nonnull String message, int responseStatusCode, @Nullable Buffer responseBody) {
+    public ReceivedUnexpectedResponse(@NotNull String requestLabel, @NotNull String message, int responseStatusCode, @Nullable Buffer responseBody) {
         super("{" + requestLabel + "} " + message);
         this.responseStatusCode = responseStatusCode;
         this.responseBody = responseBody;

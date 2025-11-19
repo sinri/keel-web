@@ -1,16 +1,11 @@
 package io.github.sinri.keel.web.http.prehandler;
 
-import io.github.sinri.keel.core.TechnicalPreview;
 import io.vertx.ext.auth.authentication.AuthenticationProvider;
 import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.impl.UserContextInternal;
 
-/**
- * @since 4.1.0
- */
-@TechnicalPreview(since = "4.1.0")
 public abstract class KeelAuthenticationHandlerWithCredentials implements AuthenticationHandler, AuthenticationProvider {
     @Override
     public void handle(RoutingContext routingContext) {

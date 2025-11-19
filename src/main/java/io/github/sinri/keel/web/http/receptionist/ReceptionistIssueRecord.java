@@ -1,36 +1,30 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.logger.issue.record.KeelIssueRecord;
+import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * @since 3.2.0
  */
-public final class ReceptionistIssueRecord extends KeelIssueRecord<ReceptionistIssueRecord> {
+public final class ReceptionistIssueRecord extends SpecificLog<ReceptionistIssueRecord> {
     public static final String TopicReceptionist = "Receptionist";
     public static final String AttributeRequest = "request";
     public static final String AttributeResponse = "response";
     public static final String AttributeRespondInfo = "RespondInfo";
 
-    public ReceptionistIssueRecord(@Nonnull String requestId) {
+    public ReceptionistIssueRecord(@NotNull String requestId) {
         super();
-        this.attribute("request_id", requestId);
-    }
-
-    @Nonnull
-    @Override
-    public ReceptionistIssueRecord getImplementation() {
-        return this;
+        this.extra("request_id", requestId);
     }
 
     public ReceptionistIssueRecord setRequest(
-            @Nonnull HttpMethod method,
-            @Nonnull String path,
-            @Nonnull Class<?> receptionistClass,
+            @NotNull HttpMethod method,
+            @NotNull String path,
+            @NotNull Class<?> receptionistClass,
             @Nullable String query,
             @Nullable String body
     ) {
@@ -40,12 +34,12 @@ public final class ReceptionistIssueRecord extends KeelIssueRecord<ReceptionistI
                 .put("handler", receptionistClass.getName());
         if (query != null) x.put("query", query);
         if (body != null) x.put("body", body);
-        this.attribute(AttributeRequest, x);
+        this.extra(AttributeRequest, x);
         return this;
     }
 
     public ReceptionistIssueRecord setResponse(@Nullable Object responseBody) {
-        this.attribute(AttributeResponse, new JsonObject()
+        this.extra(AttributeResponse, new JsonObject()
                 .put("body", responseBody)
         );
         return this;
@@ -57,7 +51,7 @@ public final class ReceptionistIssueRecord extends KeelIssueRecord<ReceptionistI
             boolean ended,
             boolean closed
     ) {
-        this.attribute(AttributeRespondInfo, new JsonObject()
+        this.extra(AttributeRespondInfo, new JsonObject()
                 .put("code", statusCode)
                 .put("message", statusMessage)
                 .put("ended", ended)
