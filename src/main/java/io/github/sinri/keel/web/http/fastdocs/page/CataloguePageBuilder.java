@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http.fastdocs.page;
 
+import io.github.sinri.keel.core.utils.FileUtils;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -15,7 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.jar.JarEntry;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
 
 public class CataloguePageBuilder implements FastDocsContentResponder {
     private static String catalogueDivContentCache = null;
@@ -229,7 +229,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         tree.href = options.rootURLPath + "index.md";
         tree.level = 0;
         tree.name = options.subjectOfDocuments;
-        List<JarEntry> jarEntries = Keel.fileHelper().traversalInRunningJar(options.rootMarkdownFilePath);
+        List<JarEntry> jarEntries = FileUtils.traversalInRunningJar(options.rootMarkdownFilePath);
         for (var jarEntry : jarEntries) {
             TreeNode child = buildTreeNodeInJar(jarEntry);
             if (child != null) {
@@ -250,7 +250,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
             treeNode.level = Path.of(treeNode.href).getNameCount() - 1;
             treeNode.href = (options.rootURLPath + treeNode.href).replaceAll("/+", "/");
 
-            List<JarEntry> jarEntries = Keel.fileHelper().traversalInRunningJar(jarEntry.getName());
+            List<JarEntry> jarEntries = FileUtils.traversalInRunningJar(jarEntry.getName());
             for (var childJarEntry : jarEntries) {
                 var x = buildTreeNodeInJar(childJarEntry);
                 if (x != null) treeNode.addChild(x);

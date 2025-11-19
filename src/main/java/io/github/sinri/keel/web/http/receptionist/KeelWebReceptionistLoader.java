@@ -1,5 +1,7 @@
 package io.github.sinri.keel.web.http.receptionist;
 
+import io.github.sinri.keel.core.utils.ReflectionUtils;
+import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.web.http.prehandler.PreHandlerChain;
 import io.github.sinri.keel.web.http.prehandler.PreHandlerChainMeta;
 import io.vertx.core.http.HttpMethod;
@@ -10,42 +12,48 @@ import io.vertx.ext.web.RoutingContext;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
+
 
 /**
  * @since 3.2.13
  * @since 3.2.18 from class to interface.
  */
 public interface KeelWebReceptionistLoader {
+
     /**
      * Note: MAIN and TEST scopes are seperated.
      *
      * @param packageName the name of the package where the classes extending `R` are.
      */
     static <R extends KeelWebReceptionist> void loadPackage(Router router, String packageName, Class<R> classOfReceptionist) {
-        Set<Class<? extends R>> allClasses = Keel.reflectionHelper()
-                                                 .seekClassDescendantsInPackage(packageName, classOfReceptionist);
+        Set<Class<? extends R>> allClasses = ReflectionUtils.seekClassDescendantsInPackage(packageName, classOfReceptionist);
 
         try {
             allClasses.forEach(c -> loadClass(router, c));
         } catch (Exception e) {
-            Keel.getLogger().exception(e, r -> r.classification("KeelWebReceptionistLoader", "loadPackage"));
+            Keel.getLoggerFactory()
+                .createLogger(KeelWebReceptionistLoader.class.getName())
+                .exception(e, r -> r.classification(List.of("KeelWebReceptionistLoader", "loadPackage")));
         }
     }
 
     static <R extends KeelWebReceptionist> void loadClass(Router router, Class<? extends R> c) {
-        ApiMeta[] apiMetaArray = Keel.reflectionHelper().getAnnotationsOfClass(c, ApiMeta.class);
+        ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
             loadClass(router, c, apiMeta);
         }
     }
 
     private static <R extends KeelWebReceptionist> void loadClass(Router router, Class<? extends R> c, ApiMeta apiMeta) {
-        Keel.getLogger().info(r -> r
-                .classification("KeelWebReceptionistLoader", "loadClass")
+        Logger logger = Keel.getLoggerFactory()
+                            .createLogger(KeelWebReceptionistLoader.class.getName());
+        logger.info(r -> r
+                .classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                 .message("Loading " + c.getName())
                 .context(j -> {
                     JsonArray methods = new JsonArray();
@@ -65,7 +73,7 @@ public interface KeelWebReceptionistLoader {
         try {
             receptionistConstructor = c.getConstructor(RoutingContext.class);
         } catch (NoSuchMethodException e) {
-            Keel.getLogger().exception(e, r -> r.classification("KeelWebReceptionistLoader", "loadClass")
+            logger.exception(e, r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                                 .message("HANDLER REFLECTION EXCEPTION"));
             return;
         }
@@ -100,7 +108,7 @@ public interface KeelWebReceptionistLoader {
                 try {
                     preHandlerChain = preHandlerChainClass.getConstructor().newInstance();
                 } catch (Throwable e) {
-                    Keel.getLogger().exception(e, r -> r.classification("KeelWebReceptionistLoader", "loadClass")
+                    logger.exception(e, r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                                         .message("PreHandlerChain REFLECTION EXCEPTION"));
                     return;
                 }

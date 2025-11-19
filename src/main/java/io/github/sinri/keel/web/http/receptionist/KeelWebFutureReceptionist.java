@@ -36,8 +36,8 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
                       }
                   } catch (Throwable throwable) {
                       getIssueRecorder().exception(throwable,
-                              "RoutingContext has been dealt by others",
                               event -> event
+                                      .message("RoutingContext has been dealt by others")
                                       .setRespondInfo(
                                               getRoutingContext().response().getStatusCode(),
                                               getRoutingContext().response().getStatusMessage(),

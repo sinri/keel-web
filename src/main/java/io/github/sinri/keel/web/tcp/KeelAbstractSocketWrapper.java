@@ -1,8 +1,8 @@
 package io.github.sinri.keel.web.tcp;
 
 import io.github.sinri.keel.core.servant.funnel.KeelFunnel;
-import io.github.sinri.keel.logger.issue.center.KeelIssueRecordCenter;
-import io.github.sinri.keel.logger.issue.recorder.KeelIssueRecorder;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
+import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
@@ -10,7 +10,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 
+import java.util.List;
 import java.util.UUID;
+
+import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 /**
  * @since 2.8
@@ -22,7 +25,7 @@ abstract public class KeelAbstractSocketWrapper {
     /**
      * @since 3.2.0
      */
-    private KeelIssueRecorder<SocketIssueRecord> issueRecorder;
+    private final SpecificLogger<SocketIssueRecord> issueRecorder;
 
     public KeelAbstractSocketWrapper(NetSocket socket) {
         this(socket, UUID.randomUUID().toString());
@@ -34,7 +37,7 @@ abstract public class KeelAbstractSocketWrapper {
 
         //KeelIssueRecorder<SocketIssueRecord> silentIssueRecorder = KeelIssueRecordCenter.silentCenter().generateIssueRecorder("silent", () -> null);
         //this.setIssueRecorder(silentIssueRecorder);
-        this.buildIssueRecorder();
+        this.issueRecorder = this.buildIssueRecorder();
 
         this.funnel = new KeelFunnel();
         this.funnel.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
@@ -88,23 +91,22 @@ abstract public class KeelAbstractSocketWrapper {
      *
      * @since 4.0.0
      */
-    protected KeelIssueRecordCenter getIssueRecordCenter() {
-        return KeelIssueRecordCenter.silentCenter();
+    protected LoggerFactory getIssueRecordCenter() {
+        return Keel.getLoggerFactory();
     }
 
     /**
      * @since 3.2.0
      */
-    public KeelIssueRecorder<SocketIssueRecord> getIssueRecorder() {
+    public final SpecificLogger<SocketIssueRecord> getIssueRecorder() {
         return issueRecorder;
     }
 
     /**
      * @since 4.0.0
      */
-    private void buildIssueRecorder() {
-        issueRecorder = getIssueRecordCenter().generateIssueRecorder(SocketIssueRecord.TopicTcpSocket, SocketIssueRecord::new);
-        issueRecorder.setRecordFormatter(r -> r.classification("socket_id:" + socketID));
+    private SpecificLogger<SocketIssueRecord> buildIssueRecorder() {
+        return getIssueRecordCenter().createLogger(SocketIssueRecord.TopicTcpSocket, () -> new SocketIssueRecord().classification(List.of("socket_id:" + socketID)));
     }
 
     public String getSocketID() {
