@@ -2,6 +2,8 @@ package io.github.sinri.keel.web.udp;
 
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
+import io.vertx.core.Closeable;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.datagram.DatagramSocket;
@@ -12,39 +14,37 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
- * @since 2.8
- *         Once named KeelUDPServer.
+ * UDP 传输器
+ *
+ * @since 5.0.0
  */
-public class KeelUDPTransceiver {
+public class KeelUDPTransceiver implements Closeable {
     private final int port;
+    @NotNull
     private final DatagramSocket udpServer;
-    /**
-     * @since 3.2.0
-     */
-    private @NotNull
-    final SpecificLogger<DatagramIssueRecord> issueRecorder;
+    @NotNull
+    private final SpecificLogger<DatagramSpecificLog> logger;
+    @NotNull
+    private String address = "0.0.0.0";
+    @NotNull
     private BiConsumer<SocketAddress, Buffer> datagramSocketConsumer = (sender, buffer) -> {
         // do nothing
     };
 
-    /**
-     * @since 4.0.0 parameter issueRecorder changed to issueRecordCenter
-     */
     public KeelUDPTransceiver(
-            DatagramSocket udpServer,
+            @NotNull DatagramSocket udpServer,
             int port,
-            @NotNull LoggerFactory issueRecordCenter
+            @NotNull String address,
+            @NotNull LoggerFactory loggerFactory
     ) {
         this.port = port;
+        this.address = address;
         this.udpServer = udpServer;
-        this.issueRecorder = issueRecordCenter.createLogger(DatagramIssueRecord.TopicUdpDatagram, DatagramIssueRecord::new);
+        this.logger = loggerFactory.createLogger(DatagramSpecificLog.TopicUdpDatagram, DatagramSpecificLog::new);
     }
 
-    /**
-     * @since 3.2.0
-     */
-    public @NotNull SpecificLogger<DatagramIssueRecord> getIssueRecorder() {
-        return issueRecorder;
+    public @NotNull SpecificLogger<DatagramSpecificLog> getLogger() {
+        return logger;
     }
 
     public KeelUDPTransceiver setDatagramSocketConsumer(BiConsumer<SocketAddress, Buffer> datagramSocketConsumer) {
@@ -54,32 +54,37 @@ public class KeelUDPTransceiver {
     }
 
     public Future<Object> listen() {
-        return udpServer.listen(port, "0.0.0.0")
+        return udpServer.listen(port, address)
                         .compose(datagramSocket -> {
                             datagramSocket.handler(datagramPacket -> {
                                               SocketAddress sender = datagramPacket.sender();
                                               Buffer data = datagramPacket.data();
 
-                                              getIssueRecorder().info(r -> r
+                                              getLogger().info(r -> r
                                                       .bufferReceived(data, sender.hostAddress(), sender.port())
                                               );
                                               this.datagramSocketConsumer.accept(sender, data);
                                           })
                                           //.endHandler(end -> getIssueRecorder().info(r -> r.message("read end")))
-                                          .exceptionHandler(throwable -> getIssueRecorder().exception(throwable, r -> r.message("read error")));
+                                          .exceptionHandler(throwable -> getLogger().exception(throwable, r -> r.message("read error")));
                             return Future.succeededFuture();
                         });
     }
 
     public Future<Void> send(Buffer buffer, int targetPort, String targetAddress) {
         return udpServer.send(buffer, targetPort, targetAddress)
-                        .onSuccess(done -> getIssueRecorder().info(r -> r.bufferSent(buffer, targetAddress, targetPort)))
-                        .onFailure(throwable -> getIssueRecorder().exception(throwable, r -> r.message("failed to send to " + targetAddress + ":" + targetPort)));
+                        .onSuccess(done -> getLogger().info(r -> r.bufferSent(buffer, targetAddress, targetPort)))
+                        .onFailure(throwable -> getLogger().exception(throwable, r -> r.message("failed to send to " + targetAddress + ":" + targetPort)));
     }
 
     public Future<Void> close() {
         return udpServer.close()
-                        .onSuccess(v -> getIssueRecorder().info(r -> r.message("closed")))
-                        .onFailure(throwable -> getIssueRecorder().exception(throwable, r -> r.message("failed to close")));
+                        .onSuccess(v -> getLogger().info(r -> r.message("closed")))
+                        .onFailure(throwable -> getLogger().exception(throwable, r -> r.message("failed to close")));
+    }
+
+    @Override
+    public void close(Completable<Void> completion) {
+        close().onComplete(completion);
     }
 }

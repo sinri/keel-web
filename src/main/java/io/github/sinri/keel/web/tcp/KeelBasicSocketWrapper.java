@@ -9,7 +9,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * @since 2.8
+ * 针对{@link NetSocket}的动态实现封装类。
+ *
+ * @since 5.0.0
  */
 public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     private Function<Buffer, Future<Void>> incomingBufferProcessor = buffer -> Future.succeededFuture();

@@ -8,16 +8,18 @@ import org.jetbrains.annotations.NotNull;
 
 
 /**
- * @since 3.2.0
+ * Socket 相关的特定日志。
+ *
+ * @since 5.0.0
  */
-public final class SocketIssueRecord extends SpecificLog<SocketIssueRecord> {
+public final class SocketSpecificLog extends SpecificLog<SocketSpecificLog> {
     public static final String TopicTcpSocket = "TcpSocket";
 
-    public SocketIssueRecord() {
+    public SocketSpecificLog() {
         super();
     }
 
-    public SocketIssueRecord buffer(@NotNull Buffer buffer) {
+    public SocketSpecificLog buffer(@NotNull Buffer buffer) {
         this.context("buffer", new JsonObject()
                 .put("buffer_content", BinaryUtils.encodeHexWithUpperDigits(buffer))
                 .put("buffer_size", buffer.length())

@@ -16,16 +16,15 @@ import java.util.UUID;
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 /**
- * @since 2.8
+ * 针对{@link NetSocket}的封装类。
+ *
+ * @since 5.0.0
  */
 abstract public class KeelAbstractSocketWrapper {
     private final String socketID;
     private final NetSocket socket;
     private final KeelFunnel funnel;
-    /**
-     * @since 3.2.0
-     */
-    private final SpecificLogger<SocketIssueRecord> issueRecorder;
+    private final SpecificLogger<SocketSpecificLog> logger;
 
     public KeelAbstractSocketWrapper(NetSocket socket) {
         this(socket, UUID.randomUUID().toString());
@@ -35,16 +34,14 @@ abstract public class KeelAbstractSocketWrapper {
         this.socketID = socketID;
         this.socket = socket;
 
-        //KeelIssueRecorder<SocketIssueRecord> silentIssueRecorder = KeelIssueRecordCenter.silentCenter().generateIssueRecorder("silent", () -> null);
-        //this.setIssueRecorder(silentIssueRecorder);
-        this.issueRecorder = this.buildIssueRecorder();
+        this.logger = this.buildLogger();
 
         this.funnel = new KeelFunnel();
         this.funnel.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
 
         this.socket
                 .handler(buffer -> {
-                    getIssueRecorder().info(eventLog -> eventLog
+                    getLogger().info(eventLog -> eventLog
                             .message("READ BUFFER " + buffer.length() + " BYTES")
                             .buffer(buffer)
                     );
@@ -59,7 +56,7 @@ abstract public class KeelAbstractSocketWrapper {
                      This handler might be called after the close handler
                      when the socket is paused and there are still buffers to deliver.
                      */
-                    getIssueRecorder().info(r -> r.message("READ TO END"));
+                    getLogger().info(r -> r.message("READ TO END"));
                     whenReadToEnd();
                 })
                 .drainHandler(drain -> {
@@ -71,51 +68,37 @@ abstract public class KeelAbstractSocketWrapper {
                     The stream implementation defines when the drain handler,
                     for example it could be when the queue size has been reduced to maxSize / 2.
                      */
-                    getIssueRecorder().info(r -> r.message("BE WRITABLE AGAIN, RESUME"));
+                    getLogger().info(r -> r.message("BE WRITABLE AGAIN, RESUME"));
                     socket.resume();
                     whenDrain();
                 })
                 .closeHandler(close -> {
-                    getIssueRecorder().info(r -> r.message("SOCKET CLOSE"));
+                    getLogger().info(r -> r.message("SOCKET CLOSE"));
                     this.funnel.undeployMe();
                     whenClose();
                 })
                 .exceptionHandler(throwable -> {
-                    getIssueRecorder().exception(throwable, r -> r.message("socket exception"));
+                    getLogger().exception(throwable, r -> r.message("socket exception"));
                     whenExceptionOccurred(throwable);
                 });
     }
 
-    /**
-     * By default, it is silent.
-     *
-     * @since 4.0.0
-     */
-    protected LoggerFactory getIssueRecordCenter() {
+    protected LoggerFactory getLoggerFactory() {
         return Keel.getLoggerFactory();
     }
 
-    /**
-     * @since 3.2.0
-     */
-    public final SpecificLogger<SocketIssueRecord> getIssueRecorder() {
-        return issueRecorder;
+    public final SpecificLogger<SocketSpecificLog> getLogger() {
+        return logger;
     }
 
-    /**
-     * @since 4.0.0
-     */
-    private SpecificLogger<SocketIssueRecord> buildIssueRecorder() {
-        return getIssueRecordCenter().createLogger(SocketIssueRecord.TopicTcpSocket, () -> new SocketIssueRecord().classification(List.of("socket_id:" + socketID)));
+    private SpecificLogger<SocketSpecificLog> buildLogger() {
+        return getLoggerFactory().createLogger(SocketSpecificLog.TopicTcpSocket, () -> new SocketSpecificLog().classification(List.of("socket_id:" + socketID)));
     }
 
     public String getSocketID() {
         return socketID;
     }
 
-    /**
-     * This method is managed by KeelSisiodosi, would be run in order and thread safely.
-     */
     abstract protected Future<Void> whenBufferComes(Buffer incomingBuffer);
 
     protected void whenReadToEnd() {
@@ -138,7 +121,7 @@ abstract public class KeelAbstractSocketWrapper {
         Future<Void> future = this.socket.write(s);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
-            getIssueRecorder().info(r -> r.message("Write Queue Full, PAUSE"));
+            getLogger().info(r -> r.message("Write Queue Full, PAUSE"));
         }
         return future;
     }
@@ -147,7 +130,7 @@ abstract public class KeelAbstractSocketWrapper {
         Future<Void> future = this.socket.write(s, enc);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
-            getIssueRecorder().info(r -> r.message("Write Queue Full, PAUSE"));
+            getLogger().info(r -> r.message("Write Queue Full, PAUSE"));
         }
         return future;
     }
@@ -156,7 +139,7 @@ abstract public class KeelAbstractSocketWrapper {
         Future<Void> future = this.socket.write(buffer);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
-            getIssueRecorder().info(r -> r.message("Write Queue Full, PAUSE"));
+            getLogger().info(r -> r.message("Write Queue Full, PAUSE"));
         }
         return future;
     }
