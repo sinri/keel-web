@@ -3,7 +3,6 @@ package io.github.sinri.keel.web.http.fastdocs;
 import io.github.sinri.keel.web.http.fastdocs.page.CataloguePageBuilder;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownCssBuilder;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownPageBuilder;
-import io.github.sinri.keel.web.http.fastdocs.page.PageBuilderOptions;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;

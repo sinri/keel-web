@@ -1,4 +1,4 @@
-package io.github.sinri.keel.web.http.fastdocs.page;
+package io.github.sinri.keel.web.http.fastdocs;
 
 import io.vertx.ext.web.RoutingContext;
 

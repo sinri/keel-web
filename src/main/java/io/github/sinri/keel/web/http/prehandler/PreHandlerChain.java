@@ -18,13 +18,17 @@ import java.util.List;
  * @since 5.0.0
  */
 public class PreHandlerChain {
+    /**
+     * @see KeelPlatformHandler
+     */
     protected final List<PlatformHandler> platformHandlers = new ArrayList<>();
 
     protected final List<SecurityPolicyHandler> securityPolicyHandlers = new ArrayList<>();
     protected final List<ProtocolUpgradeHandler> protocolUpgradeHandlers = new ArrayList<>();
     protected final List<MultiTenantHandler> multiTenantHandlers = new ArrayList<>();
     /**
-     * Tells who the user is
+     * Tells who the user is.
+     * @see SimpleAuthenticationHandler
      */
     protected final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
     protected final List<InputTrustHandler> inputTrustHandlers = new ArrayList<>();

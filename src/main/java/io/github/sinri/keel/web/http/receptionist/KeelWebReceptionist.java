@@ -5,11 +5,12 @@ import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
-import io.vertx.core.http.impl.CookieImpl;
+import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -157,12 +158,14 @@ public abstract class KeelWebReceptionist {
         return routingContext.user();
     }
 
-    protected void addCookie(String name, String value, Long maxAge, boolean httpOnly) {
-        CookieImpl cookie = new CookieImpl(name, value);
-        cookie.setPath("/");
-        cookie.setMaxAge(maxAge);
-        cookie.setHttpOnly(httpOnly);
-        getRoutingContext().response().addCookie(cookie);
+    protected void addCookie(String name, String value, @Nullable String path, @Nullable Long maxAge, boolean httpOnly) {
+        Cookie cookie1 = Cookie.cookie(name, value);
+        cookie1.setPath(Objects.requireNonNullElse(path, "/"));
+        if (maxAge != null) {
+            cookie1.setMaxAge(maxAge);
+        }
+        cookie1.setHttpOnly(httpOnly);
+        getRoutingContext().response().addCookie(cookie1);
     }
 
     protected void removeCookie(@NotNull String name) {

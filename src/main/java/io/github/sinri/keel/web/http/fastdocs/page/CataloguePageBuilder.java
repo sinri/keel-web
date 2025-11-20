@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.fastdocs.page;
 
 import io.github.sinri.keel.core.utils.FileUtils;
+import io.github.sinri.keel.web.http.fastdocs.PageBuilderOptions;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

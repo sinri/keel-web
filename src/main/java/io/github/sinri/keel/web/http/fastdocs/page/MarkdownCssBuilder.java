@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http.fastdocs.page;
 
+import io.github.sinri.keel.web.http.fastdocs.PageBuilderOptions;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
