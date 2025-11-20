@@ -6,7 +6,8 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-web</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <!--    <version>5.0.0-SNAPSHOT</version>-->
+    <version>5.0.0-rc.1</version>
 
     <name>Keel-Web</name>
     <description>
