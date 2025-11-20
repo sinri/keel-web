@@ -6,9 +6,9 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * The exception that HTTP Response Status Code is not 200.
+ * 接收到的接口请求回复状态值不是 200。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public final class ReceivedAbnormalStatusResponse extends ReceivedUnexpectedResponse {
 

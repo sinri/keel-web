@@ -5,9 +5,9 @@ import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @since 2.9.2
- * @since 2.9.2 add authorization with privileges
- * @since 3.0.0 TEST PASSED
+ * 指定使用异步逻辑构成主逻辑的请求接待类。
+ *
+ * @since 5.0.0
  */
 abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
 
@@ -17,8 +17,7 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
 
     @Override
     public void handle() {
-        // since 3.1.5 add a starting log
-        getIssueRecorder().info(log -> log.message("TO HANDLE REQUEST"));
+        getLogger().info(log -> log.message("TO HANDLE REQUEST"));
 
         Future.succeededFuture()
               .compose(v -> handleForFuture())
@@ -35,7 +34,7 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
                           this.getResponder().respondOnSuccess(ar.result());
                       }
                   } catch (Throwable throwable) {
-                      getIssueRecorder().exception(throwable,
+                      getLogger().exception(throwable,
                               event -> event
                                       .message("RoutingContext has been dealt by others")
                                       .setRespondInfo(

@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * @since 3.0.1 JSON only.
- * @since 3.2.13 automatically support JSON and FORM.
+ * 自待处理请求对象{@link RoutingContext}中抽取请求体并进行读取。
+ * <p>
+ * 请求对象的 Content Type 可以是 JSON 和 FORM（包括分块支持）。
+ * @since 5.0.0
  */
 abstract public class AbstractRequestBody extends UnmodifiableJsonifiableEntityImpl {
 
@@ -28,6 +30,7 @@ abstract public class AbstractRequestBody extends UnmodifiableJsonifiableEntityI
                 return routingContext.body().asJsonObject();
             }
         }
+        // 表单提交的默认编码方式 application/x-www-form-urlencoded
         JsonObject requestObject = new JsonObject();
         routingContext.request().formAttributes()
                       .forEach(entry -> requestObject.put(entry.getKey(), entry.getValue()));

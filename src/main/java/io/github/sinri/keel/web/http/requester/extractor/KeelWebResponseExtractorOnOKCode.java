@@ -11,10 +11,9 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**
- * To filter out the situation that Response Status Code is set and not 200, and the response body is not in JSON object
- * format, and the value mapped to key {@code code} is not {@code OK}.
+ * 验证接口请求回复报文的有效性并从中萃取出 JSON 对象，并在萃取过程中验证 code 字段为 OK。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public class KeelWebResponseExtractorOnOKCode extends KeelWebResponseExtractorOnJsonObjectFormat {
     public KeelWebResponseExtractorOnOKCode(@NotNull String requestLabel, HttpResponse<Buffer> response) {

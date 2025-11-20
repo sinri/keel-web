@@ -8,20 +8,22 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * @since 3.2.0
+ * 请求接待日志。
+ *
+ * @since 5.0.0
  */
-public final class ReceptionistIssueRecord extends SpecificLog<ReceptionistIssueRecord> {
+public final class ReceptionistSpecificLog extends SpecificLog<ReceptionistSpecificLog> {
     public static final String TopicReceptionist = "Receptionist";
     public static final String AttributeRequest = "request";
     public static final String AttributeResponse = "response";
     public static final String AttributeRespondInfo = "RespondInfo";
 
-    public ReceptionistIssueRecord(@NotNull String requestId) {
+    public ReceptionistSpecificLog(@NotNull String requestId) {
         super();
         this.extra("request_id", requestId);
     }
 
-    public ReceptionistIssueRecord setRequest(
+    public ReceptionistSpecificLog setRequest(
             @NotNull HttpMethod method,
             @NotNull String path,
             @NotNull Class<?> receptionistClass,
@@ -38,14 +40,14 @@ public final class ReceptionistIssueRecord extends SpecificLog<ReceptionistIssue
         return this;
     }
 
-    public ReceptionistIssueRecord setResponse(@Nullable Object responseBody) {
+    public ReceptionistSpecificLog setResponse(@Nullable Object responseBody) {
         this.extra(AttributeResponse, new JsonObject()
                 .put("body", responseBody)
         );
         return this;
     }
 
-    public ReceptionistIssueRecord setRespondInfo(
+    public ReceptionistSpecificLog setRespondInfo(
             int statusCode,
             @Nullable String statusMessage,
             boolean ended,

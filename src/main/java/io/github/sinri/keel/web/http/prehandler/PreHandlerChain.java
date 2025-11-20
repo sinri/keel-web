@@ -10,10 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The class provided a basic implementation.
- * You may override it to support more requirements.
+ * 对一个请求进行预处理的预处理器链。
+ * <p>
+ * 本类为基本实现，可以在子类中实现更多自定义内容。
+ * 通常是在子类的构造方法中对各种类型的处理器列表进行必要的新增。
  *
- * @since 3.2.13
+ * @since 5.0.0
  */
 public class PreHandlerChain {
     protected final List<PlatformHandler> platformHandlers = new ArrayList<>();

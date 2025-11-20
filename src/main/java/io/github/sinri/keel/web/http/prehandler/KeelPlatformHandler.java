@@ -13,13 +13,15 @@ import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
 /**
- * @since 2.9.2
- * @since 3.0.0 TEST PASSED
+ * 平台级处理器。
+ * <p>
+ * 向{@link RoutingContext}的数据记录中添加请求 ID 和请求到达时间。
+ *
+ * @since 5.0.0
  */
 public class KeelPlatformHandler implements PlatformHandler {
     public final static String KEEL_REQUEST_ID = "KEEL_REQUEST_ID"; // -> String
     public final static String KEEL_REQUEST_START_TIME = "KEEL_REQUEST_START_TIME"; // -> long * 0.001 second
-    //public final static String KEEL_REQUEST_CLIENT_IP_CHAIN = "KEEL_REQUEST_CLIENT_IP_CHAIN"; // -> List<String of IP>
 
 
     @Override
@@ -35,7 +37,6 @@ public class KeelPlatformHandler implements PlatformHandler {
                 routingContext.put(KEEL_REQUEST_ID, "%s-%s-%s".formatted(NetUtils.getLocalHostAddress(), id, UUID.randomUUID()));
 
                 routingContext.put(KEEL_REQUEST_START_TIME, System.currentTimeMillis());
-                //routingContext.put(KEEL_REQUEST_CLIENT_IP_CHAIN, keel.netHelper().parseWebClientIPChain(routingContext));
 
                 return Future.succeededFuture();
             })

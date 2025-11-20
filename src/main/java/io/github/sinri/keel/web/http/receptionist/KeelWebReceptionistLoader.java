@@ -20,15 +20,23 @@ import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
 /**
- * @since 3.2.13
- * @since 3.2.18 from class to interface.
+ * 请求接待类加载器。
+ * <p>
+ * 这是一个工具类。
+ *
+ * @since 5.0.0
  */
-public interface KeelWebReceptionistLoader {
+public final class KeelWebReceptionistLoader {
 
     /**
-     * Note: MAIN and TEST scopes are seperated.
+     * 自某个包中加载指定类型的请求接待类，基于各类的接口元信息登记到路由中。
+     * <p>
+     * Note: MAIN and TEST scopes are separated.
      *
-     * @param packageName the name of the package where the classes extending `R` are.
+     * @param router              路由
+     * @param packageName         请求接待类所在的包；扫描时包含其下的子包。
+     * @param classOfReceptionist 具体要通过反射支持的特定的一类请求接待类的基类
+     * @param <R>                 具体要通过反射支持的特定的请求接待类的类型。
      */
     static <R extends KeelWebReceptionist> void loadPackage(Router router, String packageName, Class<R> classOfReceptionist) {
         Set<Class<? extends R>> allClasses = ReflectionUtils.seekClassDescendantsInPackage(packageName, classOfReceptionist);
@@ -42,6 +50,13 @@ public interface KeelWebReceptionistLoader {
         }
     }
 
+    /**
+     * 加载的请求接待类，基于各类的接口元信息登记到路由中。
+     *
+     * @param router 路由
+     * @param c      具体要通过反射支持的请求接待类
+     * @param <R>    具体要通过反射支持的请求接待类的类型。
+     */
     static <R extends KeelWebReceptionist> void loadClass(Router router, Class<? extends R> c) {
         ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
@@ -74,7 +89,7 @@ public interface KeelWebReceptionistLoader {
             receptionistConstructor = c.getConstructor(RoutingContext.class);
         } catch (NoSuchMethodException e) {
             logger.exception(e, r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
-                                                .message("HANDLER REFLECTION EXCEPTION"));
+                                      .message("HANDLER REFLECTION EXCEPTION"));
             return;
         }
 
@@ -109,7 +124,7 @@ public interface KeelWebReceptionistLoader {
                     preHandlerChain = preHandlerChainClass.getConstructor().newInstance();
                 } catch (Throwable e) {
                     logger.exception(e, r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
-                                                        .message("PreHandlerChain REFLECTION EXCEPTION"));
+                                              .message("PreHandlerChain REFLECTION EXCEPTION"));
                     return;
                 }
                 break;

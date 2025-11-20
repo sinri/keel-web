@@ -1,10 +1,9 @@
 package io.github.sinri.keel.web.http.receptionist.responder;
 
-import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
-import io.github.sinri.keel.web.http.receptionist.ReceptionistIssueRecord;
+import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
 import io.vertx.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,11 +13,13 @@ import java.util.Objects;
 import static io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist.parseWebClientIPChain;
 
 /**
- * @since 4.0.6
+ * Web 请求响应器的基础实现类。
+ *
+ * @since 5.0.0
  */
 public abstract class AbstractKeelWebResponder implements KeelWebResponder {
     private final @NotNull RoutingContext routingContext;
-    private final @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder;
+    private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
 
     /**
      * Constructs an AbstractKeelWebResponder instance with the given routing context and issue recorder.
@@ -27,7 +28,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
      * @param issueRecorder  the recorder for tracking and recording issues during the processing of the request, must
      *                       not be null
      */
-    public AbstractKeelWebResponder(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder) {
+    public AbstractKeelWebResponder(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         this.routingContext = routingContext;
         this.issueRecorder = issueRecorder;
     }
@@ -44,13 +45,13 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
 
     /**
      * Retrieves the associated issue recorder for managing and recording issues specific to
-     * {@link ReceptionistIssueRecord}.
+     * {@link ReceptionistSpecificLog}.
      *
-     * @return an instance of {@link SpecificLogger} configured for handling {@link ReceptionistIssueRecord},
+     * @return an instance of {@link SpecificLogger} configured for handling {@link ReceptionistSpecificLog},
      *         never null
      */
     @NotNull
-    public SpecificLogger<ReceptionistIssueRecord> getIssueRecorder() {
+    public SpecificLogger<ReceptionistSpecificLog> getIssueRecorder() {
         return issueRecorder;
     }
 
@@ -80,7 +81,7 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
 
     /**
      * @return the request id.
-     * @since 3.0.8 mark it nullable as it might be null.
+     *
      */
     public @NotNull String readRequestID() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_ID));
@@ -88,7 +89,6 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
 
     /**
      * @return the request start time.
-     * @since 3.0.8 mark it nullable as it might be null.
      */
     public @NotNull Long readRequestStartTime() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_START_TIME));
@@ -98,19 +98,19 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
         return parseWebClientIPChain(routingContext);
     }
 
-    /**
-     * @deprecated let this deprecated method be final.
-     */
-    @Deprecated(since = "4.1.0")
-    public final void respondOnFailure(@NotNull Throwable throwable, @NotNull ValueBox<?> dataValueBox) {
-        KeelWebResponder.super.respondOnFailure(throwable, dataValueBox);
-    }
-
-    /**
-     * @deprecated let this deprecated method be final.
-     */
-    @Deprecated(since = "4.1.0")
-    public final void respondOnFailure(@NotNull Throwable throwable) {
-        respondOnFailure(throwable, new ValueBox<>());
-    }
+    //    /**
+    //     * @deprecated let this deprecated method be final.
+    //     */
+    //    @Deprecated(since = "4.1.0")
+    //    public final void respondOnFailure(@NotNull Throwable throwable, @NotNull ValueBox<?> dataValueBox) {
+    //        KeelWebResponder.super.respondOnFailure(throwable, dataValueBox);
+    //    }
+    //
+    //    /**
+    //     * @deprecated let this deprecated method be final.
+    //     */
+    //    @Deprecated(since = "4.1.0")
+    //    public final void respondOnFailure(@NotNull Throwable throwable) {
+    //        respondOnFailure(throwable, new ValueBox<>());
+    //    }
 }

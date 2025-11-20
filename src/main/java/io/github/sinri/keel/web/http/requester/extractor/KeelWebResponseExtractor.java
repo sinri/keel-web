@@ -8,11 +8,10 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * Validate the response of web requests and extract the content if validated.
- * <p>
- * As of 4.1.4, the fields are changed.
+ * 接口请求回复报文萃取器。
  *
- * @since 4.0.3
+ * @param <T> 从接口请求回复报文中萃取的值的类型
+ * @since 5.0.0
  */
 public abstract class KeelWebResponseExtractor<T> {
     @NotNull
@@ -45,6 +44,11 @@ public abstract class KeelWebResponseExtractor<T> {
         return responseBody;
     }
 
-
+    /**
+     * 从接口请求回复报文中萃取值。
+     *
+     * @return 从接口请求回复报文中萃取的值
+     * @throws ReceivedUnexpectedResponse 接收到的接口回复报文不符合预期，导致无法萃取时抛出此异常。
+     */
     public abstract T extract() throws ReceivedUnexpectedResponse;
 }

@@ -3,7 +3,7 @@ package io.github.sinri.keel.web.http.fastdocs.page;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @since 1.12
+ * @since 5.0.0
  */
 public class PageBuilderOptions {
     public String rootURLPath;

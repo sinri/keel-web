@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.Objects;
 
 /**
- * @since 1.12
+ * @since 5.0.0
  */
 public class MarkdownCssBuilder implements FastDocsContentResponder {
 

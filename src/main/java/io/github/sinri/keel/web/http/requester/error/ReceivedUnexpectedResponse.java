@@ -6,11 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The exception that HTTP Response is not expected.
- * <p>Detailed implementation classes of this exception class should keep
- * the constructor without any parameters and be public.</p>
+ * 接收到的接口回复报文不符合预期。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public class ReceivedUnexpectedResponse extends RuntimeException {
     private final int responseStatusCode;

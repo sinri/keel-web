@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * To filter out the situation that Response Status Code is set and not 200.
+ * 验证接口请求回复报文的有效性并从中萃取出 Buffer 对象。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public class KeelWebResponseExtractorOnNormalStatus extends KeelWebResponseExtractor<Buffer> {
     public KeelWebResponseExtractorOnNormalStatus(@NotNull String requestLabel, HttpResponse<Buffer> response) {

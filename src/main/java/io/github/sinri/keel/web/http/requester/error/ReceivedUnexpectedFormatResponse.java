@@ -6,12 +6,12 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * The exception that HTTP Response Status Code is not 200, or the response body is not in the expected format.
+ * 接收到的接口回复报文的格式不符合预期。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public final class ReceivedUnexpectedFormatResponse extends ReceivedUnexpectedResponse {
     public ReceivedUnexpectedFormatResponse(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
-        super(requestLabel, "received response with dody in unexpected format", responseStatusCode, responseBody);
+        super(requestLabel, "received response with body in unexpected format", responseStatusCode, responseBody);
     }
 }

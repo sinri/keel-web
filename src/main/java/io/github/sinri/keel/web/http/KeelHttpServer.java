@@ -13,11 +13,15 @@ import org.jetbrains.annotations.NotNull;
 
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
-
+/**
+ * Keel HTTP 服务基础类。
+ *
+ * @since 5.0.0
+ */
 abstract public class KeelHttpServer extends AbstractKeelVerticle implements Closeable {
-    private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
     public static final String CONFIG_HTTP_SERVER_PORT = "http_server_port";
     public static final String CONFIG_HTTP_SERVER_OPTIONS = "http_server_options";
+    private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
     protected HttpServer server;
     private Logger httpServerLogger;
 
@@ -48,7 +52,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
      * @return a {@link Future} that completes with {@code null} upon successful completion of all pre-server-start
      *         tasks,
      *         or fails with an exception if any errors occur during the process.
-     * @since 4.1.3
      */
     protected Future<Void> beforeStartServer() {
         return Future.succeededFuture();
@@ -62,7 +65,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
      * @return a {@link Future} that completes with {@code null} upon the successful
      *         completion of all post-shutdown tasks, or fails with an exception if
      *         an error occurs during the execution of these tasks.
-     * @since 4.1.3
      */
     protected Future<Void> afterShutdownServer() {
         return Future.succeededFuture();
@@ -96,23 +98,16 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
     /**
      * Override this method to use a customized issue record center.
      *
-     * @since 4.1.5
      */
     public LoggerFactory getLoggerFactory() {
         return Keel.getLoggerFactory();
     }
 
-    /**
-     * @since 4.0.2
-     */
     @NotNull
     protected final Logger buildHttpServerLogger() {
         return getLoggerFactory().createLogger("KeelHttpServer");
     }
 
-    /**
-     * @since 4.0.2
-     */
     public Logger getHttpServerLogger() {
         return httpServerLogger;
     }
@@ -126,9 +121,11 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
                       afterShutdownServer()
                               .onComplete(completion);
                   } else {
-                      getHttpServerLogger().exception(ar.cause(),
-                              r -> r.message("HTTP Server Closing Failure: " + ar.cause()
-                                                                                 .getMessage()));
+                      getHttpServerLogger().exception(
+                              ar.cause(),
+                              r -> r.message("HTTP Server Closing Failure: %s"
+                                      .formatted(ar.cause().getMessage()))
+                      );
                       completion.fail(ar.cause());
                   }
               });
@@ -141,7 +138,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
      *
      * @return a {@link Future} that completes with the deployment ID if the deployment is successful,
      *         or fails with an exception if the deployment fails.
-     * @since 4.1.3
      */
     public Future<String> deployMe() {
         DeploymentOptions deploymentOptions = new DeploymentOptions();

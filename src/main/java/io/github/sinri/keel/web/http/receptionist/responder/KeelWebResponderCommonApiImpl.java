@@ -3,34 +3,51 @@ package io.github.sinri.keel.web.http.receptionist.responder;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
-import io.github.sinri.keel.web.http.receptionist.ReceptionistIssueRecord;
+import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 
 /**
- * @since 4.0.4
+ * Web 请求响应器的一种特定实现。
+ * <p>
+ * 无论处理过程是否发生错误，返回格式为 JSON 对象。<br>
+ * 当处理过程正常返回结果时，返回{@code {"code":"OK","data":...}};<br>
+ * 否则，返回{@code {"code":"FAILED","data":...}}。
+ *
+ * @since 5.0.0
  */
 public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
 
-    public KeelWebResponderCommonApiImpl(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistIssueRecord> issueRecorder) {
+    public KeelWebResponderCommonApiImpl(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         super(routingContext, issueRecorder);
     }
 
     @Override
     public void respondOnSuccess(@Nullable Object data) {
-        JsonObject resp = buildResponseBody(Code.OK, data);
-        getRoutingContext().json(resp);
+        try {
+            JsonObject resp = buildResponseBody(Code.OK, data);
+            String encode = resp.encode();
+            getRoutingContext().response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            getRoutingContext().response().end(encode);
+        } catch (Throwable e) {
+            respondOnFailure(KeelWebApiError.wrap(e));
+        }
     }
 
     @Override
-    public void respondOnFailure(@NotNull KeelWebApiError webApiError, @NotNull ValueBox<?> dataValueBox) {
+    public void respondOnFailure(@NotNull KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox) {
         JsonObject resp;
-        if (dataValueBox.isValueAlreadySet()) {
-            resp = buildResponseBody(Code.FAILED, dataValueBox.getValue());
-        } else {
+        try {
+            Objects.requireNonNull(dataValueBox);
+            var v = dataValueBox.getNonNullValue();
+            resp = buildResponseBody(Code.FAILED, v);
+        } catch (Throwable e) {
             resp = buildResponseBody(Code.FAILED, webApiError.getMessage());
         }
         resp.put("throwable", JsonifiedThrowable.wrap(webApiError).toJsonObject());

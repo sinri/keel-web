@@ -7,10 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * The exception that HTTP Response Status Code is not 200, or the response body is not a JSON object, or the field
- * {@code code} of the parsed body entity is not {@code OK}.
+ * 接收到的接口请求回复状态值不是 200，或回复报文的无法解析为一个 JSON 对象，或解析后的 code 字段的值不是 OK。
  *
- * @since 4.0.3
+ * @since 5.0.0
  */
 public final class ReceivedFailedResponse extends ReceivedUnexpectedResponse {
     public ReceivedFailedResponse(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {

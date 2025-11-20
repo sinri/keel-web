@@ -16,7 +16,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.jar.JarEntry;
 
-
+/**
+ * FastDocs Catalogue Page Builder
+ *
+ * @since 5.0.0
+ */
 public class CataloguePageBuilder implements FastDocsContentResponder {
     private static String catalogueDivContentCache = null;
     private final PageBuilderOptions options;
@@ -32,8 +36,6 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         }
         this.embedded = x.toString().contains("!/");
         this.actualFileRootOutsideJAR = x.getPath();
-        // options.eventLogger.debug(r -> r.message("EMBEDDED: " + embedded + " url: " + x + "
-        // actualFileRootOutsideJAR: " + actualFileRootOutsideJAR));
     }
 
     @Override
@@ -49,82 +51,92 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
     }
 
     protected String buildPage() {
-        return "<!doctype html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "    <meta name='viewport' content='width=device-width, initial-scale=1'>\n" +
-                "    <title>" + getPageTitle() + "</title>\n" +
-                "    <!--suppress HtmlUnknownTarget -->\n" +
-                "    <link rel=\"stylesheet\" href=\"markdown.css\">\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            margin: 0;\n" +
-                "            background: white;\n" +
-                "        }\n" +
-                "\n" +
-                "        #header_div {\n" +
-                "            background-color: #dddddd;\n" +
-                "            padding: 10px;\n" +
-                "            height: 30px;\n" +
-                "            position: fixed;\n" +
-                "            top:0;\n" +
-                "            width: 100%;\n" +
-                "            line-height: 30px;\n" +
-                "            " + (isFromDoc() ? "display: none;" : "") + "\n" +
-                "        }\n" +
-                "        #header_div a:link{\n" +
-                "            text-decoration: none;\n" +
-                "            color: gray;\n" +
-                "        }\n" +
-                "        #header_div a:visited{\n" +
-                "            text-decoration: none;\n" +
-                "            color: gray;\n" +
-                "        }\n" +
-                "        #header_div a:hover{\n" +
-                "            text-decoration: none;\n" +
-                "            color: cornflowerblue;\n" +
-                "        }\n" +
-                "        #catalogue_div {\n" +
-                "            margin: " + (isFromDoc() ? "10px" : "50px 10px 50px") + ";\n" +
-                "        }\n" +
-                "        #footer_div{\n" +
-                "            background-color: #dddddd;\n" +
-                "            text-align: center;\n" +
-                "            padding: 10px;\n" +
-                "            height: 30px;\n" +
-                "            width: 100%;\n" +
-                "            position: fixed;\n" +
-                "            bottom: 0;\n" +
-                "            line-height: 30px;\n" +
-                "            " + (isFromDoc() ? "display: none;" : "") + "\n" +
-                "        }\n" +
-                "        div.dir_box_body_item {\n" +
-                "            white-space: nowrap;\n" +
-                "        }\n" +
-                "        div.dir_box_body_item > * {\n" +
-                "            display: inline-block;\n" +
-                "            max-width: inherit;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div id=\"header_div\">\n" +
-                "        <div style=\"display: inline-block;\">" + getLogoDivContent() + "</div>\n" +
-                "    </div>\n" +
-                "    <div id='catalogue_div' class='markdown-body'>\n" +
-                "        " + getCatalogueDivContent() + "\n" +
-                "    </div>\n" +
-                "    <div id=\"footer_div\">\n" +
-                "        " + getFooterDivContent() + "\n" +
-                "    </div>\n" +
-                "    <!--suppress JSUnusedGlobalSymbols -->\n" +
-                "    <script lang=\"JavaScript\">\n" +
-                "        function locateParentToTargetPage(target) {\n" +
-                "            window.parent.window.location = target;\n" +
-                "        }\n" +
-                "    </script>\n" +
-                "</body>\n" +
-                "</html>";
+        return """
+               <!doctype html>
+               <html lang="en">
+               <head>
+                   <meta name='viewport' content='width=device-width, initial-scale=1'>
+                   <title>%s</title>
+                   <!--suppress HtmlUnknownTarget -->
+                   <link rel="stylesheet" href="markdown.css">
+                   <style>
+                       body {
+                           margin: 0;
+                           background: white;
+                       }
+               
+                       #header_div {
+                           background-color: #dddddd;
+                           padding: 10px;
+                           height: 30px;
+                           position: fixed;
+                           top:0;
+                           width: 100%%;
+                           line-height: 30px;
+                           %s
+                       }
+                       #header_div a:link{
+                           text-decoration: none;
+                           color: gray;
+                       }
+                       #header_div a:visited{
+                           text-decoration: none;
+                           color: gray;
+                       }
+                       #header_div a:hover{
+                           text-decoration: none;
+                           color: cornflowerblue;
+                       }
+                       #catalogue_div {
+                           margin: %s;
+                       }
+                       #footer_div{
+                           background-color: #dddddd;
+                           text-align: center;
+                           padding: 10px;
+                           height: 30px;
+                           width: 100%%;
+                           position: fixed;
+                           bottom: 0;
+                           line-height: 30px;
+                           %s
+                       }
+                       div.dir_box_body_item {
+                           white-space: nowrap;
+                       }
+                       div.dir_box_body_item > * {
+                           display: inline-block;
+                           max-width: inherit;
+                       }
+                   </style>
+               </head>
+               <body>
+                   <div id="header_div">
+                       <div style="display: inline-block;">%s</div>
+                   </div>
+                   <div id='catalogue_div' class='markdown-body'>
+                       %s
+                   </div>
+                   <div id="footer_div">
+                       %s
+                   </div>
+                   <!--suppress JSUnusedGlobalSymbols -->
+                   <script lang="JavaScript">
+                       function locateParentToTargetPage(target) {
+                           window.parent.window.location = target;
+                       }
+                   </script>
+               </body>
+               </html>"""
+                .formatted(
+                        getPageTitle(),
+                        isFromDoc() ? "display: none;" : "",
+                        isFromDoc() ? "10px" : "50px 10px 50px",
+                        isFromDoc() ? "display: none;" : "",
+                        getLogoDivContent(),
+                        getCatalogueDivContent(),
+                        getFooterDivContent()
+                );
     }
 
     private boolean isFromDoc() {
@@ -170,19 +182,13 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         } else {
             displayDirName = options.subjectOfDocuments;
         }
-        //boxHref = boxHref + "/index.md";
 
         sb.append("<div class='dir_box_body_item'>");
         sb.append("<div style='display: inline-block;width:20px;border-left: 1px solid lightgrey;'>&nbsp;</div>".repeat(Math.max(0, tree.level)));
         sb.append("<div class='dir_box_title' style='display: inline-block;'>")
-          //                .append("<span>")
-          //                .append("\uD83D\uDCC1&nbsp;")
-          //                .append("</span>")
-          //                .append("<span>")
           .append("<a href='").append(boxHref).append("' ").append(isFromDoc() ? "target='_parent'" : "")
           .append(" style='white-space: nowrap;display: inline-block;'").append(" >").append("\uD83D\uDCC1&nbsp;")
           .append(displayDirName).append("</a>")
-          //                .append("</span>")
           .append("</div>");
         sb.append("</div>");
 
@@ -197,15 +203,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
                     sb.append(("<div style='display: inline-block;width:20px;border-left: 1px solid lightgrey;" +
                             "'>&nbsp;" +
                             "</div>").repeat(Math.max(0, tree.level + 1)));
-                    //                .append("<span>")
-                    //                            .append("\uD83D\uDCC4&nbsp;")
-                    //                .append("</span>")
-                    //                .append("<span>")
                     sb
-                            //                .append("<span>")
-                            //                            .append("\uD83D\uDCC4&nbsp;")
-                            //                .append("</span>")
-                            //                .append("<span>")
                             .append("<a href='")
                             .append(child.href)
                             .append("' ")
@@ -236,13 +234,10 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
                 tree.addChild(child);
             }
         }
-        // options.eventLogger.debug(eventLog -> eventLog.context(c -> c.put("TREE", tree.toJsonObject())));
         return tree;
     }
 
     private TreeNode buildTreeNodeInJar(JarEntry jarEntry) {
-        // options.eventLogger.debug(r -> r.message("buildTreeNodeInJar: " + jarEntry.getName() + " isDir: " +
-        // jarEntry.isDirectory()));
         TreeNode treeNode = new TreeNode();
         treeNode.name = String.valueOf(Path.of(jarEntry.getName()).getFileName());
         if (jarEntry.isDirectory()) {
@@ -272,7 +267,6 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
 
     protected TreeNode buildTreeOutsideJAR() {
         File root = new File(actualFileRootOutsideJAR);
-        // options.eventLogger.debug(r -> r.message("buildTreeOutsideJAR " + root.getAbsolutePath()));
 
         TreeNode tree = new TreeNode();
         tree.href = options.rootURLPath + "index.md";
@@ -280,10 +274,8 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         tree.level = 0;
 
         if (root.isDirectory()) {
-            // options.eventLogger.debug(r -> r.message("IS DIR? " + root.isDirectory()));
             File[] files = root.listFiles();
             if (files != null) {
-                // options.eventLogger.debug(r -> r.message("files total " + files.length));
                 for (var file : files) {
                     var x = buildTreeNodeOutsideJar(file);
                     if (x != null) {
@@ -293,7 +285,6 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
             }
         }
 
-        // options.eventLogger.debug(eventLog -> eventLog.context(c -> c.put("TREE", tree.toJsonObject())));
         return tree;
     }
 

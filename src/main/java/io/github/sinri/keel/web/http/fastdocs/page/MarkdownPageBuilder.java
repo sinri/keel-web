@@ -11,7 +11,7 @@ import java.util.List;
 
 
 /**
- * @since 1.12
+ * @since 5.0.0
  */
 public class MarkdownPageBuilder implements FastDocsContentResponder {
 
@@ -64,93 +64,95 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
 
     protected String buildPage() {
         KeelMarkdownKit keelMarkdownKit = new KeelMarkdownKit();
-        return "<!doctype html>\n" +
-                "<html lang=\"en\">\n" +
-                "<head>\n" +
-                "    <meta name='viewport' content='width=device-width, initial-scale=1'>\n" +
-                "    <title>" + getPageTitle() + "</title>\n" +
-                "    <link rel=\"stylesheet\"\n" +
-                "          href=\"" + this.options.rootURLPath + "markdown.css\">\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            margin: 0;\n" +
-                "            background: white;\n" +
-                "        }\n" +
-                "\n" +
-                "        #header_div {\n" +
-                "            background-color: #dddddd;\n" +
-                "            padding: 10px;\n" +
-                "            height: 30px;\n" +
-                "            position: fixed;\n" +
-                "                top:0;\n" +
-                "                width: 100%;\n" +
-                "                line-height: 30px;\n" +
-                "            }\n" +
-                "            #header_div a:link{\n" +
-                "                text-decoration: none;\n" +
-                "                color: gray;\n" +
-                "            }\n" +
-                "            #header_div a:visited{\n" +
-                "                text-decoration: none;\n" +
-                "                color: gray;\n" +
-                "            }\n" +
-                "            #header_div a:hover{\n" +
-                "                text-decoration: none;\n" +
-                "                color: cornflowerblue;\n" +
-                "            }\n" +
-                "\n" +
-                "            #parsed_md_div {\n" +
-                "                margin: 50px 10px 50px 300px;\n" +
-                "                padding: 10px;\n" +
-                "            }\n" +
-                "            #footer_div{\n" +
-                "                background-color: #dddddd;\n" +
-                "                text-align: center;\n" +
-                "                padding: 10px;\n" +
-                "                height: 30px;\n" +
-                "                width: 100%;\n" +
-                "                position: fixed;\n" +
-                "                bottom: 0;\n" +
-                "                line-height: 30px;\n" +
-                "            }\n" +
-                "            #catalogue_div{\n" +
-                "                position: fixed;\n" +
-                "                left:0;\n" +
-                "                top:50px;\n" +
-                "                bottom: 50px;\n" +
-                "                width: 300px;\n" +
-                "                border-right: 1px solid gray;\n" +
-                "            }\n" +
-                "            #catalogue_iframe{\n" +
-                "                height: 100%;\n" +
-                "                width: 300px;\n" +
-                "                border:none;\n" +
-                "            }\n" +
-                "        </style>\n" +
-                "    </head>\n" +
-                "    <body>\n" +
-                "        <div id=\"header_div\">\n" +
-                "            <div style=\"display: inline-block;\">" + getLogoDivContent() + "</div>\n" +
-                "            <div style=\"display: inline-block;margin-left:50px;font-size: 10px;line-height: 22px\">" + getComputedBreadcrumbDivContent() + "</div>\n" +
-                "        </div>\n" +
-                "        <div id='parsed_md_div' class='markdown-body'>\n" +
-                "            " + keelMarkdownKit.convertMarkdownToHtml(options.markdownContent) + "\n" +
-                "        </div>\n" +
-                "        <div id=\"footer_div\">\n" +
-                "            <div style=\"display: inline-block;margin: auto 5px;\">" + getFooterDivContent() + "</div>\n" +
-                "            <div style=\"display: inline-block;color: gray;\">|</div>\n" +
-                "            <div style=\"display: inline-block;margin: auto 5px;\">\n" +
-                "                <a href=\"" + getCatalogueLink(null) + "\">Catalogue</a>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "        <div id=\"catalogue_div\">\n" +
-                "            <iframe id=\"catalogue_iframe\" name=\"catalogue_iframe\"\n" +
-                "                    src=\"" + getCatalogueLink(options.ctx.request().path()
-                                                                           .substring(this.options.rootURLPath.length())) + "\"\n" +
-                "            ></iframe>\n" +
-                "        </div>\n" +
-                "    </body>\n" +
-                "</html>";
+        return """
+               <!doctype html>
+               <html lang="en">
+               <head>
+                   <meta name='viewport' content='width=device-width, initial-scale=1'>
+                   <title>%s</title>
+                   <link rel="stylesheet"
+                         href="%smarkdown.css">
+                   <style>
+                       body {
+                           margin: 0;
+                           background: white;
+                       }
+               
+                       #header_div {
+                           background-color: #dddddd;
+                           padding: 10px;
+                           height: 30px;
+                           position: fixed;
+                               top:0;
+                               width: 100%%;
+                               line-height: 30px;
+                           }
+                           #header_div a:link{
+                               text-decoration: none;
+                               color: gray;
+                           }
+                           #header_div a:visited{
+                               text-decoration: none;
+                               color: gray;
+                           }
+                           #header_div a:hover{
+                               text-decoration: none;
+                               color: cornflowerblue;
+                           }
+               
+                           #parsed_md_div {
+                               margin: 50px 10px 50px 300px;
+                               padding: 10px;
+                           }
+                           #footer_div{
+                               background-color: #dddddd;
+                               text-align: center;
+                               padding: 10px;
+                               height: 30px;
+                               width: 100%%;
+                               position: fixed;
+                               bottom: 0;
+                               line-height: 30px;
+                           }
+                           #catalogue_div{
+                               position: fixed;
+                               left:0;
+                               top:50px;
+                               bottom: 50px;
+                               width: 300px;
+                               border-right: 1px solid gray;
+                           }
+                           #catalogue_iframe{
+                               height: 100%%;
+                               width: 300px;
+                               border:none;
+                           }
+                       </style>
+                   </head>
+                   <body>
+                       <div id="header_div">
+                           <div style="display: inline-block;">%s</div>
+                           <div style="display: inline-block;margin-left:50px;font-size: 10px;line-height: 22px">%s</div>
+                       </div>
+                       <div id='parsed_md_div' class='markdown-body'>
+                           %s
+                       </div>
+                       <div id="footer_div">
+                           <div style="display: inline-block;margin: auto 5px;">%s</div>
+                           <div style="display: inline-block;color: gray;">|</div>
+                           <div style="display: inline-block;margin: auto 5px;">
+                               <a href="%s">Catalogue</a>
+                           </div>
+                       </div>
+                       <div id="catalogue_div">
+                           <iframe id="catalogue_iframe" name="catalogue_iframe"
+                                   src="%s"
+                           ></iframe>
+                       </div>
+                   </body>
+               </html>""".formatted(getPageTitle(), this.options.rootURLPath, getLogoDivContent(), getComputedBreadcrumbDivContent(), keelMarkdownKit.convertMarkdownToHtml(options.markdownContent), getFooterDivContent(), getCatalogueLink(null), getCatalogueLink(options.ctx.request()
+                                                                                                                                                                                                                                                                                 .path()
+                                                                                                                                                                                                                                                                                 .substring(this.options.rootURLPath.length())));
     }
 
     @Override

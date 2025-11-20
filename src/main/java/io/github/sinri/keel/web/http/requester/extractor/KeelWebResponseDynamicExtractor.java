@@ -13,12 +13,10 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * A dynamic extractor designed to process HTTP responses by validating desired status codes
- * and applying a transformation function to the response body.
- * This class is primarily for scenarios where the response body format may vary depending on the use case.
+ * 动态接口请求回复报文萃取器。
  *
- * @param <T> The data type of the extracted result after applying the transformer function.
- * @since 4.1.5
+ * @param <T> 从接口请求回复报文中萃取的值的类型
+ * @since 5.0.0
  */
 public class KeelWebResponseDynamicExtractor<T> {
     private final @Nullable String defaultRequestLabel;

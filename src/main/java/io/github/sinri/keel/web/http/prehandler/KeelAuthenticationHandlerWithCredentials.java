@@ -6,6 +6,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.impl.UserContextInternal;
 
+/**
+ * 基于资格的验证处理器。
+ *
+ * @since 5.0.0
+ */
 public abstract class KeelAuthenticationHandlerWithCredentials implements AuthenticationHandler, AuthenticationProvider {
     @Override
     public void handle(RoutingContext routingContext) {

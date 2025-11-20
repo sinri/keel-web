@@ -11,10 +11,11 @@ import org.jetbrains.annotations.Nullable;
 
 
 /**
- * Tell who the user is, if not a legal user, fail the request with RequestDenied.
+ * 验证处理器。
+ * <p>
+ * 根据访问请求内容，异步判断是否是可接受的合法请求。
  *
- * @since 2.9.2
- * @since 3.0.0 TEST PASSED
+ * @since 5.0.0
  */
 abstract public class KeelAuthenticationHandler implements AuthenticationHandler {
 
