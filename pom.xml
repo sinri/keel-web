@@ -7,7 +7,22 @@
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-web</artifactId>
     <!--        <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.5</version>
+    <version>5.0.0-rc.6</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mavenSourcePluginVersion>3.3.1</mavenSourcePluginVersion>
+        <mavenJavadocPluginVersion>3.12.0</mavenJavadocPluginVersion>
+        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
+        <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
+        <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
+        <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
+        <vertxVersion>5.0.5</vertxVersion>
+        <keelCoreVersion>5.0.0-rc.11</keelCoreVersion>
+        <keelTestVersion>5.0.0-rc.10</keelTestVersion>
+    </properties>
 
     <name>Keel-Web</name>
     <description>
@@ -35,19 +50,6 @@
             <organizationUrl>https://sinri.github.io</organizationUrl>
         </developer>
     </developers>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mavenSourcePluginVersion>3.3.1</mavenSourcePluginVersion>
-        <mavenJavadocPluginVersion>3.12.0</mavenJavadocPluginVersion>
-        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
-        <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
-        <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
-        <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
-        <vertxVersion>5.0.5</vertxVersion>
-    </properties>
 
     <build>
         <resources>
@@ -186,13 +188,13 @@
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-core</artifactId>
-            <version>5.0.0-rc.10</version>
+            <version>${keelCoreVersion}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-test</artifactId>
-            <version>5.0.0-rc.9</version>
+            <version>${keelTestVersion}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
