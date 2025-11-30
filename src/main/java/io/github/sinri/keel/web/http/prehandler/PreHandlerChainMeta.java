@@ -1,6 +1,8 @@
 package io.github.sinri.keel.web.http.prehandler;
 
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -11,5 +13,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PreHandlerChainMeta {
+    @NotNull
     Class<? extends PreHandlerChain> value() default PreHandlerChain.class;
 }

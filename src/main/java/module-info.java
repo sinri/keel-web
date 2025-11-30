@@ -5,7 +5,6 @@ module io.github.sinri.keel.web {
     requires io.github.sinri.keel.logger.api;
     requires io.vertx.auth.common;
     requires io.vertx.core;
-    requires io.vertx.core.logging;
     requires io.vertx.web;
     requires io.vertx.web.client;
     requires static org.jetbrains.annotations; // compile-time only

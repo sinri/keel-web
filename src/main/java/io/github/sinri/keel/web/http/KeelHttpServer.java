@@ -4,24 +4,25 @@ import io.github.sinri.keel.base.verticles.AbstractKeelVerticle;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.Logger;
-import io.vertx.core.*;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.ThreadingModel;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import org.jetbrains.annotations.NotNull;
 
-import static io.github.sinri.keel.base.KeelInstance.Keel;
-
 /**
  * Keel HTTP 服务基础类。
  *
  * @since 5.0.0
  */
-abstract public class KeelHttpServer extends AbstractKeelVerticle implements Closeable {
+abstract public class KeelHttpServer extends AbstractKeelVerticle {
     public static final String CONFIG_HTTP_SERVER_PORT = "http_server_port";
     public static final String CONFIG_HTTP_SERVER_OPTIONS = "http_server_options";
     private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
+
     protected HttpServer server;
     private Logger httpServerLogger;
 
@@ -71,7 +72,7 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
     }
 
     @Override
-    protected Future<Void> startVerticle() {
+    protected @NotNull Future<Void> startVerticle() {
         this.httpServerLogger = buildHttpServerLogger();
 
         this.server = Keel.getVertx().createHttpServer(getHttpServerOptions());
@@ -82,14 +83,15 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
         return beforeStartServer()
                 .compose(v0 -> {
                     return server.requestHandler(router)
-                                 .exceptionHandler(throwable -> getHttpServerLogger().exception(throwable, r -> r.message("KeelHttpServer Exception")))
+                                 .exceptionHandler(throwable -> getHttpServerLogger().error(r -> r.message("KeelHttpServer Exception")
+                                                                                                  .exception(throwable)))
                                  .listen()
                                  .compose(httpServer -> {
                                      int actualPort = httpServer.actualPort();
                                      getHttpServerLogger().info(r -> r.message("HTTP Server Established, Actual Port: " + actualPort));
                                      return Future.succeededFuture();
                                  }, throwable -> {
-                                     getHttpServerLogger().exception(throwable, r -> r.message("Listen failed"));
+                                     getHttpServerLogger().error(r -> r.message("Listen failed").exception(throwable));
                                      return Future.failedFuture(throwable);
                                  });
                 });
@@ -113,22 +115,18 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
     }
 
     @Override
-    public void close(Completable<Void> completion) {
-        server.close()
-              .andThen(ar -> {
-                  if (ar.succeeded()) {
-                      getHttpServerLogger().info(r -> r.message("HTTP Server Closed"));
-                      afterShutdownServer()
-                              .onComplete(completion);
-                  } else {
-                      getHttpServerLogger().exception(
-                              ar.cause(),
-                              r -> r.message("HTTP Server Closing Failure: %s"
-                                      .formatted(ar.cause().getMessage()))
-                      );
-                      completion.fail(ar.cause());
-                  }
-              });
+    protected @NotNull Future<Void> stopVerticle() {
+        return server.close()
+                     .compose(v -> {
+                         getHttpServerLogger().info(r -> r.message("HTTP Server Closed"));
+                         return afterShutdownServer()
+                                 .eventually(Future::succeededFuture);
+                     }, throwable -> {
+                         getHttpServerLogger().error(r -> r
+                                 .message("HTTP Server Closing Failure: %s".formatted(throwable.getMessage()))
+                                 .exception(throwable));
+                         return Future.failedFuture(throwable);
+                     });
     }
 
 
@@ -139,6 +137,7 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle implements Clo
      * @return a {@link Future} that completes with the deployment ID if the deployment is successful,
      *         or fails with an exception if the deployment fails.
      */
+    @NotNull
     public Future<String> deployMe() {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         if (ReflectionUtils.isVirtualThreadsAvailable()) {

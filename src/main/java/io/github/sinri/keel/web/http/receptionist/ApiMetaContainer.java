@@ -1,5 +1,7 @@
 package io.github.sinri.keel.web.http.receptionist;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -9,5 +11,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiMetaContainer {
+    @NotNull
     ApiMeta[] value();
 }

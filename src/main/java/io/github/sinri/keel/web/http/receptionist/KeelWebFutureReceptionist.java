@@ -3,6 +3,7 @@ package io.github.sinri.keel.web.http.receptionist;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 指定使用异步逻辑构成主逻辑的请求接待类。
@@ -11,7 +12,7 @@ import io.vertx.ext.web.RoutingContext;
  */
 abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
 
-    public KeelWebFutureReceptionist(RoutingContext routingContext) {
+    public KeelWebFutureReceptionist(@NotNull RoutingContext routingContext) {
         super(routingContext);
     }
 
@@ -34,19 +35,19 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
                           this.getResponder().respondOnSuccess(ar.result());
                       }
                   } catch (Throwable throwable) {
-                      getLogger().exception(throwable,
-                              event -> event
-                                      .message("RoutingContext has been dealt by others")
-                                      .setRespondInfo(
-                                              getRoutingContext().response().getStatusCode(),
-                                              getRoutingContext().response().getStatusMessage(),
-                                              getRoutingContext().response().ended(),
-                                              getRoutingContext().response().closed()
-                                      )
-                      );
+                      getLogger().error(event -> event
+                              .message("RoutingContext has been dealt by others")
+                              .setRespondInfo(
+                                      getRoutingContext().response().getStatusCode(),
+                                      getRoutingContext().response().getStatusMessage(),
+                                      getRoutingContext().response().ended(),
+                                      getRoutingContext().response().closed()
+                              )
+                              .exception(throwable));
                   }
               });
     }
 
+    @NotNull
     abstract protected Future<Object> handleForFuture();
 }

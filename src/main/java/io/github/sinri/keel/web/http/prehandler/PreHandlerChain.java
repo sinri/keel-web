@@ -5,6 +5,8 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,28 +23,37 @@ public class PreHandlerChain {
     /**
      * @see KeelPlatformHandler
      */
+    @NotNull
     protected final List<PlatformHandler> platformHandlers = new ArrayList<>();
-
+    @NotNull
     protected final List<SecurityPolicyHandler> securityPolicyHandlers = new ArrayList<>();
+    @NotNull
     protected final List<ProtocolUpgradeHandler> protocolUpgradeHandlers = new ArrayList<>();
+    @NotNull
     protected final List<MultiTenantHandler> multiTenantHandlers = new ArrayList<>();
     /**
      * Tells who the user is.
      * @see SimpleAuthenticationHandler
      */
+    @NotNull
     protected final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
+    @NotNull
     protected final List<InputTrustHandler> inputTrustHandlers = new ArrayList<>();
     /**
      * Tells what the user is allowed to do
      */
+    @NotNull
     protected final List<AuthorizationHandler> authorizationHandlers = new ArrayList<>();
+    @NotNull
     protected final List<Handler<RoutingContext>> userHandlers = new ArrayList<>();
 
+    @NotNull
     protected String uploadDirectory = BodyHandler.DEFAULT_UPLOADS_DIRECTORY;
 
+    @Nullable
     protected Handler<RoutingContext> failureHandler = null;
 
-    public final void executeHandlers(Route route, ApiMeta apiMeta) {
+    public final void executeHandlers(@NotNull Route route, @NotNull ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
         // PLATFORM
         route.handler(new KeelPlatformHandler());

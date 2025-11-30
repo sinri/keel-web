@@ -5,6 +5,7 @@ import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.auth.User;
@@ -65,6 +66,11 @@ public abstract class KeelWebReceptionist {
         return routingContext;
     }
 
+    @NotNull
+    protected final Vertx getVertx() {
+        return getRoutingContext().vertx();
+    }
+
     /**
      * @return 是否记录详细日志
      */
@@ -97,37 +103,6 @@ public abstract class KeelWebReceptionist {
      */
     abstract public void handle();
 
-    //    /**
-    //     * As of 4.0.4, this method is not overrideable. Use {@link KeelWebReceptionist#getResponder()}.
-    //     * <p>
-    //     * As of 4.1.3, no usage in Keel, to remove.
-    //     *
-    //     * @since 3.0.12 add request_id to output json object
-    //     */
-    //    @Deprecated(since = "4.1.3", forRemoval = true)
-    //    protected final void respondOnSuccess(@Nullable Object data) {
-    //        getResponder().respondOnSuccess(data);
-    //        getLogger().info(r -> r.message("SUCCESS, TO RESPOND."));
-    //    }
-
-    //    /**
-    //     * As of 4.0.4, this method is not overrideable. Use {@link KeelWebReceptionist#getResponder()}.
-    //     * <p>
-    //     * As of 4.1.3, no usage in Keel, to remove.
-    //     *
-    //     * @since 3.0.12 add request_id to output json object
-    //     *
-    //     */
-    //    @Deprecated(since = "4.1.3", forRemoval = true)
-    //    protected final void respondOnFailure(@NotNull Throwable throwable) {
-    //        if (throwable instanceof KeelWebApiError) {
-    //            getResponder().respondOnFailure((KeelWebApiError) throwable);
-    //        } else {
-    //            getResponder().respondOnFailure(KeelWebApiError.wrap(throwable));
-    //        }
-    //        getLogger().exception(throwable, "FAILED, TO RESPOND.");
-    //    }
-
     /**
      * @return 后端赋予请求的ID
      */
@@ -154,11 +129,12 @@ public abstract class KeelWebReceptionist {
      *
      * @return 获取请求上下文中登记的用户实体
      */
+    @Nullable
     public User readRequestUser() {
         return routingContext.user();
     }
 
-    protected void addCookie(String name, String value, @Nullable String path, @Nullable Long maxAge, boolean httpOnly) {
+    protected void addCookie(@NotNull String name, @NotNull String value, @Nullable String path, @Nullable Long maxAge, boolean httpOnly) {
         Cookie cookie1 = Cookie.cookie(name, value);
         cookie1.setPath(Objects.requireNonNullElse(path, "/"));
         if (maxAge != null) {
