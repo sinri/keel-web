@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http.receptionist;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.web.http.prehandler.PreHandlerChain;
@@ -10,15 +11,12 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
 /**
@@ -41,6 +39,7 @@ public final class KeelWebReceptionistLoader {
      * @param <R>                 具体要通过反射支持的特定的请求接待类的类型。
      */
     static <R extends KeelWebReceptionist> void loadPackage(
+            @NotNull Keel keel,
             @NotNull Router router,
             @NotNull String packageName,
             @NotNull Class<R> classOfReceptionist
@@ -48,9 +47,9 @@ public final class KeelWebReceptionistLoader {
         Set<Class<? extends R>> allClasses = ReflectionUtils.seekClassDescendantsInPackage(packageName, classOfReceptionist);
 
         try {
-            allClasses.forEach(c -> loadClass(router, c));
+            allClasses.forEach(c -> loadClass(keel, router, c));
         } catch (Exception e) {
-            Keel.getLoggerFactory()
+            keel.getLoggerFactory()
                 .createLogger(KeelWebReceptionistLoader.class.getName())
                 .error(log -> log
                         .classification(List.of("KeelWebReceptionistLoader", "loadPackage"))
@@ -66,15 +65,15 @@ public final class KeelWebReceptionistLoader {
      * @param c      具体要通过反射支持的请求接待类
      * @param <R>    具体要通过反射支持的请求接待类的类型。
      */
-    static <R extends KeelWebReceptionist> void loadClass(@NotNull Router router,@NotNull Class<? extends R> c) {
+    static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c) {
         ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
-            loadClass(router, c, apiMeta);
+            loadClass(keel, router, c, apiMeta);
         }
     }
 
-    private static <R extends KeelWebReceptionist> void loadClass(@NotNull Router router, @NotNull Class<? extends R> c, ApiMeta apiMeta) {
-        Logger logger = Keel.getLoggerFactory()
+    private static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c, ApiMeta apiMeta) {
+        Logger logger = keel.getLoggerFactory()
                             .createLogger(KeelWebReceptionistLoader.class.getName());
         logger.info(r -> r
                 .classification(List.of("KeelWebReceptionistLoader", "loadClass"))
@@ -95,7 +94,7 @@ public final class KeelWebReceptionistLoader {
 
         Constructor<? extends R> receptionistConstructor;
         try {
-            receptionistConstructor = c.getConstructor(RoutingContext.class);
+            receptionistConstructor = c.getConstructor(Keel.class, RoutingContext.class);
         } catch (NoSuchMethodException e) {
             logger.error(r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                .message("HANDLER REFLECTION EXCEPTION")
@@ -148,12 +147,12 @@ public final class KeelWebReceptionistLoader {
         if (preHandlerChain == null) {
             preHandlerChain = new PreHandlerChain();
         }
-        preHandlerChain.executeHandlers(route, apiMeta);
+        preHandlerChain.executeHandlers(keel.getVertx(), route, apiMeta);
 
         // finally!
         route.handler(routingContext -> {
             try {
-                R receptionist = receptionistConstructor.newInstance(routingContext);
+                R receptionist = receptionistConstructor.newInstance(keel, routingContext);
                 receptionist.handle();
             } catch (Throwable e) {
                 routingContext.fail(e);

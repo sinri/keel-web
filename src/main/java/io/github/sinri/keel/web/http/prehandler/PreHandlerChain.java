@@ -2,6 +2,7 @@ package io.github.sinri.keel.web.http.prehandler;
 
 import io.github.sinri.keel.web.http.receptionist.ApiMeta;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
@@ -33,6 +34,7 @@ public class PreHandlerChain {
     protected final List<MultiTenantHandler> multiTenantHandlers = new ArrayList<>();
     /**
      * Tells who the user is.
+     *
      * @see SimpleAuthenticationHandler
      */
     @NotNull
@@ -53,10 +55,10 @@ public class PreHandlerChain {
     @Nullable
     protected Handler<RoutingContext> failureHandler = null;
 
-    public final void executeHandlers(@NotNull Route route, @NotNull ApiMeta apiMeta) {
+    public final void executeHandlers(@NotNull Vertx vertx, @NotNull Route route, @NotNull ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
         // PLATFORM
-        route.handler(new KeelPlatformHandler());
+        route.handler(new KeelPlatformHandler(vertx));
         if (apiMeta.timeout() > 0) {
             // PlatformHandler
             route.handler(TimeoutHandler.create(apiMeta.timeout(), apiMeta.statusCodeForTimeout()));

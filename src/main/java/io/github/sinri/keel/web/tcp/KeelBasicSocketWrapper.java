@@ -1,9 +1,11 @@
 package io.github.sinri.keel.web.tcp;
 
+import io.github.sinri.keel.base.Keel;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -24,12 +26,12 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     private Consumer<Throwable> exceptionHandler = throwable -> {
     };
 
-    public KeelBasicSocketWrapper(NetSocket socket) {
-        super(socket);
+    public KeelBasicSocketWrapper(@NotNull Keel keel, NetSocket socket) {
+        super(keel, socket);
     }
 
-    public KeelBasicSocketWrapper(NetSocket socket, String socketID) {
-        super(socket, socketID);
+    public KeelBasicSocketWrapper(@NotNull Keel keel, NetSocket socket, String socketID) {
+        super(keel, socket, socketID);
     }
 
     public KeelBasicSocketWrapper setCloseHandler(Handler<Void> closeHandler) {
@@ -81,7 +83,7 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     }
 
     @Override
-    protected void whenExceptionOccurred(Throwable throwable) {
+    protected void whenExceptionOccurred(@NotNull Throwable throwable) {
         super.whenExceptionOccurred(throwable);
         exceptionHandler.accept(throwable);
     }

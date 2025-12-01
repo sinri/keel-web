@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http.receptionist;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
@@ -26,8 +27,10 @@ public abstract class KeelWebReceptionist {
     private final @NotNull RoutingContext routingContext;
     private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
     private final @NotNull KeelWebResponder responder;
+    private final @NotNull Keel keel;
 
-    public KeelWebReceptionist(@NotNull RoutingContext routingContext) {
+    public KeelWebReceptionist(@NotNull Keel keel, @NotNull RoutingContext routingContext) {
+        this.keel = keel;
         this.routingContext = routingContext;
         this.issueRecorder = getLoggerFactory().createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
         if (isVerboseLogging()) {
@@ -59,6 +62,10 @@ public abstract class KeelWebReceptionist {
         List<String> list = new ArrayList<>();
         clientIPChain.forEach(item -> list.add(item.toString()));
         return list;
+    }
+
+    public final @NotNull Keel keel() {
+        return keel;
     }
 
     @NotNull
