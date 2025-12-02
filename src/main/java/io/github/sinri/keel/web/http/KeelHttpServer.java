@@ -111,7 +111,7 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
 
     @NotNull
     protected final Logger buildHttpServerLogger() {
-        return keel().getLoggerFactory().createLogger("KeelHttpServer");
+        return getKeel().getLoggerFactory().createLogger("KeelHttpServer");
     }
 
     public final Logger getHttpServerLogger() {
