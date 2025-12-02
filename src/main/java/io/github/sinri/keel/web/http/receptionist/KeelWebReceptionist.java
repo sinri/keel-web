@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.receptionist;
 
 import io.github.sinri.keel.base.Keel;
+import io.github.sinri.keel.base.KeelHolder;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
@@ -23,7 +24,7 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
-public abstract class KeelWebReceptionist {
+public abstract class KeelWebReceptionist implements KeelHolder {
     private final @NotNull RoutingContext routingContext;
     private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
     private final @NotNull KeelWebResponder responder;
@@ -64,7 +65,7 @@ public abstract class KeelWebReceptionist {
         return list;
     }
 
-    public final @NotNull Keel keel() {
+    public final @NotNull Keel getKeel() {
         return keel;
     }
 
@@ -74,7 +75,7 @@ public abstract class KeelWebReceptionist {
     }
 
     @NotNull
-    protected final Vertx getVertx() {
+    public final Vertx getVertx() {
         return getRoutingContext().vertx();
     }
 

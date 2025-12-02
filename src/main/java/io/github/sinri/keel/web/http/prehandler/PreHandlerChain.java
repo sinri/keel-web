@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http.prehandler;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.web.http.receptionist.ApiMeta;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -54,6 +55,18 @@ public class PreHandlerChain {
 
     @Nullable
     protected Handler<RoutingContext> failureHandler = null;
+
+    /**
+     * 使用给定的{@link AuthenticationDelegate}实例，基于{@link SimpleAuthenticationHandler}提供的实现，创建一个{@link
+     * AuthenticationHandler}实例。
+     *
+     * @param keel     给定的{@link Keel} 实例
+     * @param delegate 给定的{@link AuthenticationDelegate}实例，提供认证逻辑，解析请求上下文并异步确定对应授权访问者身份
+     * @return {@link AuthenticationHandler}实例
+     */
+    protected static AuthenticationHandler buildAuthenticationHandlerWithDelegate(@NotNull Keel keel, @NotNull AuthenticationDelegate delegate) {
+        return SimpleAuthenticationHandler.create().authenticate(delegate::authenticate);
+    }
 
     public final void executeHandlers(@NotNull Vertx vertx, @NotNull Route route, @NotNull ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
