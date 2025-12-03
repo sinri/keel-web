@@ -38,7 +38,7 @@ public final class KeelWebReceptionistLoader {
      * @param classOfReceptionist 具体要通过反射支持的特定的一类请求接待类的基类
      * @param <R>                 具体要通过反射支持的特定的请求接待类的类型。
      */
-    static <R extends KeelWebReceptionist> void loadPackage(
+    public static <R extends KeelWebReceptionist> void loadPackage(
             @NotNull Keel keel,
             @NotNull Router router,
             @NotNull String packageName,
@@ -65,7 +65,7 @@ public final class KeelWebReceptionistLoader {
      * @param c      具体要通过反射支持的请求接待类
      * @param <R>    具体要通过反射支持的请求接待类的类型。
      */
-    static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c) {
+    public static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c) {
         ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
             loadClass(keel, router, c, apiMeta);
