@@ -130,7 +130,7 @@ public final class KeelWebReceptionistLoader {
             if (annotation != null) {
                 Class<? extends PreHandlerChain> preHandlerChainClass = annotation.value();
                 try {
-                    preHandlerChain = preHandlerChainClass.getConstructor().newInstance();
+                    preHandlerChain = preHandlerChainClass.getConstructor(Keel.class).newInstance(keel);
                 } catch (Throwable e) {
                     logger.error(r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                        .message("PreHandlerChain REFLECTION EXCEPTION")
@@ -145,9 +145,9 @@ public final class KeelWebReceptionistLoader {
         }
 
         if (preHandlerChain == null) {
-            preHandlerChain = new PreHandlerChain();
+            preHandlerChain = new PreHandlerChain(keel);
         }
-        preHandlerChain.executeHandlers(keel.getVertx(), route, apiMeta);
+        preHandlerChain.executeHandlers(route, apiMeta);
 
         // finally!
         route.handler(routingContext -> {

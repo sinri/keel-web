@@ -1,8 +1,9 @@
 package io.github.sinri.keel.web.http.prehandler;
 
+import io.github.sinri.keel.base.Keel;
+import io.github.sinri.keel.base.KeelHolder;
 import io.github.sinri.keel.web.http.receptionist.ApiMeta;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
@@ -20,7 +21,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
-public class PreHandlerChain {
+public class PreHandlerChain implements KeelHolder {
     /**
      * @see KeelPlatformHandler
      */
@@ -48,12 +49,16 @@ public class PreHandlerChain {
     protected final List<AuthorizationHandler> authorizationHandlers = new ArrayList<>();
     @NotNull
     protected final List<Handler<RoutingContext>> userHandlers = new ArrayList<>();
-
+    @NotNull
+    private final Keel keel;
     @NotNull
     protected String uploadDirectory = BodyHandler.DEFAULT_UPLOADS_DIRECTORY;
-
     @Nullable
     protected Handler<RoutingContext> failureHandler = null;
+
+    public PreHandlerChain(@NotNull Keel keel) {
+        this.keel = keel;
+    }
 
     /**
      * 使用给定的{@link AuthenticationDelegate}实例，基于{@link SimpleAuthenticationHandler}提供的实现，创建一个{@link
@@ -66,10 +71,10 @@ public class PreHandlerChain {
         return SimpleAuthenticationHandler.create().authenticate(delegate::authenticate);
     }
 
-    public final void executeHandlers(@NotNull Vertx vertx, @NotNull Route route, @NotNull ApiMeta apiMeta) {
+    public final void executeHandlers(@NotNull Route route, @NotNull ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
         // PLATFORM
-        route.handler(new KeelPlatformHandler(vertx));
+        route.handler(new KeelPlatformHandler(getVertx()));
         if (apiMeta.timeout() > 0) {
             // PlatformHandler
             route.handler(TimeoutHandler.create(apiMeta.timeout(), apiMeta.statusCodeForTimeout()));
@@ -103,5 +108,10 @@ public class PreHandlerChain {
         if (failureHandler != null) {
             route.failureHandler(failureHandler);
         }
+    }
+
+    @Override
+    public @NotNull Keel getKeel() {
+        return keel;
     }
 }
