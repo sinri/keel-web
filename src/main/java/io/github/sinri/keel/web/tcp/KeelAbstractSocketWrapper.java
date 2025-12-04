@@ -1,7 +1,7 @@
 package io.github.sinri.keel.web.tcp;
 
 import io.github.sinri.keel.base.Keel;
-import io.github.sinri.keel.core.servant.funnel.KeelFunnel;
+import io.github.sinri.keel.core.servant.funnel.Funnel;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
@@ -30,7 +30,7 @@ abstract public class KeelAbstractSocketWrapper {
     @NotNull
     private final Keel keel;
     @NotNull
-    private final KeelFunnel funnel;
+    private final Funnel funnel;
     @NotNull
     private final SpecificLogger<SocketSpecificLog> logger;
 
@@ -45,7 +45,7 @@ abstract public class KeelAbstractSocketWrapper {
 
         this.logger = this.buildLogger();
 
-        this.funnel = new KeelFunnel(keel);
+        this.funnel = new Funnel(keel);
         this.funnel.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
 
         this.socket

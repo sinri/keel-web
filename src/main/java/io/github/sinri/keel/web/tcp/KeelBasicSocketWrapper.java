@@ -60,7 +60,7 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     }
 
     @Override
-    protected Future<Void> whenBufferComes(Buffer incomingBuffer) {
+    protected @NotNull Future<Void> whenBufferComes(Buffer incomingBuffer) {
         return incomingBufferProcessor.apply(incomingBuffer);
     }
 
