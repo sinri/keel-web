@@ -22,14 +22,10 @@ public interface KeelWebResponder {
 
     void respondOnSuccess(@Nullable Object data);
 
-    /**
-     * @since 4.1.0
-     */
     void respondOnFailure(@NotNull KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox);
 
     /**
      * @param throwable the thrown {@link KeelWebApiError} instance
-     * @since 4.1.0
      */
     default void respondOnFailure(@NotNull KeelWebApiError throwable) {
         respondOnFailure(throwable, null);
