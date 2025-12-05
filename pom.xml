@@ -7,7 +7,7 @@
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-web</artifactId>
     <!-- <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.15</version>
+    <version>5.0.0-rc.16</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -20,8 +20,8 @@
         <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
         <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
         <vertxVersion>5.0.5</vertxVersion>
-        <keelCoreVersion>5.0.0-rc.16</keelCoreVersion>
-        <keelTestVersion>5.0.0-rc.15</keelTestVersion>
+        <keelCoreVersion>5.0.0-rc.17</keelCoreVersion>
+        <keelTestVersion>5.0.0-rc.16</keelTestVersion>
     </properties>
 
     <name>Keel-Web</name>
