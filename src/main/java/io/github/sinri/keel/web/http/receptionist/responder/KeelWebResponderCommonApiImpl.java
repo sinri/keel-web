@@ -17,27 +17,35 @@ import java.util.Objects;
  * Web 请求响应器的一种特定实现。
  * <p>
  * 无论处理过程是否发生错误，返回格式为 JSON 对象。<br>
- * 当处理过程正常返回结果时，返回{@code {"code":"OK","data":...}};<br>
- * 否则，返回{@code {"code":"FAILED","data":...}}。
+ * 当处理过程正常返回结果时，返回{@code {"code":"OK","data":{...}}};<br>
+ * 否则，返回{@code {"code":"FAILED","data":{...}}}。
  *
  * @since 5.0.0
  */
-public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
+class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder<JsonObject> {
 
     public KeelWebResponderCommonApiImpl(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         super(routingContext, issueRecorder);
     }
 
     @Override
-    public void respondOnSuccess(@Nullable Object data) {
+    public void respondOnSuccess(@Nullable JsonObject data) {
         try {
             JsonObject resp = buildResponseBody(Code.OK, data);
             String encode = resp.encode();
-            getRoutingContext().response().putHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+
+            String contentTypeToRespond = this.contentTypeToRespond();
+            getRoutingContext().response().putHeader(HttpHeaders.CONTENT_TYPE, contentTypeToRespond);
             getRoutingContext().response().end(encode);
         } catch (Throwable e) {
             respondOnFailure(KeelWebApiError.wrap(e));
         }
+    }
+
+    @Override
+    @NotNull
+    public String contentTypeToRespond() {
+        return "application/json";
     }
 
     @Override
@@ -46,9 +54,9 @@ public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
         try {
             Objects.requireNonNull(dataValueBox);
             var v = dataValueBox.getNonNullValue();
-            resp = buildResponseBody(Code.FAILED, v);
+            resp = buildResponseBody(Code.FAILED, new JsonObject().put("extra", v));
         } catch (Throwable e) {
-            resp = buildResponseBody(Code.FAILED, webApiError.getMessage());
+            resp = buildResponseBody(Code.FAILED, new JsonObject().put("extra_render_error", webApiError.getMessage()));
         }
         resp.put("throwable", JsonifiedThrowable.wrap(webApiError).toJsonObject());
         recordResponseVerbosely(resp);
@@ -58,7 +66,7 @@ public class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder {
         getRoutingContext().json(resp);
     }
 
-    protected final JsonObject buildResponseBody(Code code, Object data) {
+    protected final JsonObject buildResponseBody(Code code, JsonObject data) {
         return new JsonObject()
                 .put("request_id", readRequestID())
                 .put("code", code.name())

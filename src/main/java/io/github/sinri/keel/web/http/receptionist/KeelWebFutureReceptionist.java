@@ -10,13 +10,28 @@ import org.jetbrains.annotations.NotNull;
 /**
  * 指定使用异步逻辑构成主逻辑的请求接待类。
  *
+ * @param <R> 返回内容的承载类型
  * @see KeelWebResponder
  * @since 5.0.0
  */
-abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
+abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
+    private final @NotNull KeelWebResponder<R> responder;
 
     public KeelWebFutureReceptionist(@NotNull Keel keel, @NotNull RoutingContext routingContext) {
         super(keel, routingContext);
+        this.responder = buildResponder();
+    }
+
+    /**
+     *
+     * @return an instance of {@link KeelWebResponder}.
+     */
+    @NotNull
+    abstract protected KeelWebResponder<R> buildResponder();
+
+    @NotNull
+    public final KeelWebResponder<R> getResponder() {
+        return responder;
     }
 
     @Override
@@ -52,5 +67,5 @@ abstract public class KeelWebFutureReceptionist extends KeelWebReceptionist {
     }
 
     @NotNull
-    abstract protected Future<Object> handleForFuture();
+    abstract protected Future<R> handleForFuture();
 }

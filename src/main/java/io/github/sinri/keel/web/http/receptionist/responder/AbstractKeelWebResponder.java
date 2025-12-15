@@ -17,7 +17,7 @@ import static io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist.par
  *
  * @since 5.0.0
  */
-public abstract class AbstractKeelWebResponder implements KeelWebResponder {
+public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R> {
     private final @NotNull RoutingContext routingContext;
     private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
 
@@ -97,20 +97,4 @@ public abstract class AbstractKeelWebResponder implements KeelWebResponder {
     public @NotNull List<String> readRequestIPChain() {
         return parseWebClientIPChain(routingContext);
     }
-
-    //    /**
-    //     * @deprecated let this deprecated method be final.
-    //     */
-    //    @Deprecated(since = "4.1.0")
-    //    public final void respondOnFailure(@NotNull Throwable throwable, @NotNull ValueBox<?> dataValueBox) {
-    //        KeelWebResponder.super.respondOnFailure(throwable, dataValueBox);
-    //    }
-    //
-    //    /**
-    //     * @deprecated let this deprecated method be final.
-    //     */
-    //    @Deprecated(since = "4.1.0")
-    //    public final void respondOnFailure(@NotNull Throwable throwable) {
-    //        respondOnFailure(throwable, new ValueBox<>());
-    //    }
 }

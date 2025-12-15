@@ -6,7 +6,6 @@ import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
-import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
@@ -26,25 +25,23 @@ import java.util.Objects;
  */
 public abstract class KeelWebReceptionist implements KeelHolder {
     private final @NotNull RoutingContext routingContext;
-    private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
-    private final @NotNull KeelWebResponder responder;
+    private final @NotNull SpecificLogger<ReceptionistSpecificLog> logger;
     private final @NotNull Keel keel;
 
     public KeelWebReceptionist(@NotNull Keel keel, @NotNull RoutingContext routingContext) {
         this.keel = keel;
         this.routingContext = routingContext;
-        this.issueRecorder = getLoggerFactory().createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
+        this.logger = getLoggerFactory().createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
         if (isVerboseLogging()) {
-            this.issueRecorder.visibleLevel(LogLevel.DEBUG);
+            this.logger.visibleLevel(LogLevel.DEBUG);
         }
-        this.issueRecorder.info(r -> r.setRequest(
+        this.logger.info(r -> r.setRequest(
                 routingContext.request().method(),
                 routingContext.request().path(),
                 this.getClass(),
                 (isVerboseLogging() ? routingContext.request().query() : null),
                 (isVerboseLogging() ? routingContext.body().asString() : null)
         ));
-        this.responder = buildResponder();
     }
 
     @NotNull
@@ -89,19 +86,11 @@ public abstract class KeelWebReceptionist implements KeelHolder {
     @NotNull
     abstract protected LoggerFactory getLoggerFactory();
 
-    @NotNull
-    protected KeelWebResponder buildResponder() {
-        return KeelWebResponder.createCommonInstance(routingContext, issueRecorder);
-    }
 
-    @NotNull
-    public final KeelWebResponder getResponder() {
-        return responder;
-    }
 
     @NotNull
     public final SpecificLogger<ReceptionistSpecificLog> getLogger() {
-        return issueRecorder;
+        return logger;
     }
 
     /**
