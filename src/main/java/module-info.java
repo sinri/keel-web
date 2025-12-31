@@ -1,12 +1,12 @@
 module io.github.sinri.keel.web {
     // Dependencies
-    requires io.github.sinri.keel.base;
-    requires io.github.sinri.keel.core;
-    requires io.github.sinri.keel.logger.api;
-    requires io.vertx.auth.common;
-    requires io.vertx.core;
-    requires io.vertx.web;
-    requires io.vertx.web.client;
+    requires transitive io.github.sinri.keel.base;
+    requires transitive io.github.sinri.keel.core;
+    requires transitive io.github.sinri.keel.logger.api;
+    requires transitive io.vertx.auth.common;
+    requires transitive io.vertx.core;
+    requires transitive io.vertx.web;
+    requires transitive io.vertx.web.client;
     requires static org.jetbrains.annotations; // compile-time only
 
     // Public API exports
