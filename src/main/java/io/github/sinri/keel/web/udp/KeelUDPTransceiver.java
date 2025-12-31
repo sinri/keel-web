@@ -66,7 +66,8 @@ public class KeelUDPTransceiver implements Closeable {
                                               this.datagramSocketConsumer.accept(sender, data);
                                           })
                                           //.endHandler(end -> getIssueRecorder().info(r -> r.message("read end")))
-                                          .exceptionHandler(throwable -> getLogger().exception(throwable, r -> r.message("read error")));
+                                          .exceptionHandler(throwable -> getLogger()
+                                                  .error(x -> x.exception(throwable).message("read error")));
                             return Future.succeededFuture();
                         });
     }
@@ -74,13 +75,15 @@ public class KeelUDPTransceiver implements Closeable {
     public Future<Void> send(Buffer buffer, int targetPort, String targetAddress) {
         return udpServer.send(buffer, targetPort, targetAddress)
                         .onSuccess(done -> getLogger().info(r -> r.bufferSent(buffer, targetAddress, targetPort)))
-                        .onFailure(throwable -> getLogger().exception(throwable, r -> r.message("failed to send to " + targetAddress + ":" + targetPort)));
+                        .onFailure(throwable -> getLogger().error(x -> x.exception(throwable)
+                                                                        .message("failed to send to " + targetAddress + ":" + targetPort)));
     }
 
     public Future<Void> close() {
         return udpServer.close()
                         .onSuccess(v -> getLogger().info(r -> r.message("closed")))
-                        .onFailure(throwable -> getLogger().exception(throwable, r -> r.message("failed to close")));
+                        .onFailure(throwable -> getLogger().error(x -> x.exception(throwable)
+                                                                        .message("failed to close")));
     }
 
     @Override
