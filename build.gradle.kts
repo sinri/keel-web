@@ -46,14 +46,12 @@ dependencies {
 
     // Vert.x dependencies (from module-info.java and pom.xml)
     api("io.vertx:vertx-web:$vertxVersion")
-    api("io.vertx:vertx-web-client:$vertxVersion")
 
     // Annotations (from module-info.java)
     api("org.jetbrains:annotations")
 
     // Test dependencies
     testImplementation("io.github.sinri:keel-test:$keelTestVersion")
-    testImplementation("io.vertx:vertx-junit5:$vertxVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
