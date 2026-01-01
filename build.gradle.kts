@@ -48,7 +48,7 @@ dependencies {
     api("io.vertx:vertx-web:$vertxVersion")
 
     // Annotations (from module-info.java)
-    api("org.jetbrains:annotations")
+    api("org.jetbrains:annotations:26.0.2")
 
     // Test dependencies
     testImplementation("io.github.sinri:keel-test:$keelTestVersion")
