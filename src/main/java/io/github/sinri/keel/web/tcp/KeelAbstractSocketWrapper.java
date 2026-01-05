@@ -10,8 +10,8 @@ import io.vertx.core.ThreadingModel;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,23 +22,19 @@ import java.util.UUID;
  *
  * @since 5.0.0
  */
+@NullMarked
 abstract public class KeelAbstractSocketWrapper {
-    @NotNull
     private final String socketID;
-    @NotNull
     private final NetSocket socket;
-    @NotNull
     private final Keel keel;
-    @NotNull
     private final Funnel funnel;
-    @NotNull
     private final SpecificLogger<SocketSpecificLog> logger;
 
-    public KeelAbstractSocketWrapper(@NotNull Keel keel, @NotNull NetSocket socket) {
+    public KeelAbstractSocketWrapper(Keel keel, NetSocket socket) {
         this(keel, socket, UUID.randomUUID().toString());
     }
 
-    public KeelAbstractSocketWrapper(@NotNull Keel keel, @NotNull NetSocket socket, @NotNull String socketID) {
+    public KeelAbstractSocketWrapper(Keel keel, NetSocket socket, String socketID) {
         this.keel = keel;
         this.socketID = socketID;
         this.socket = socket;
@@ -92,25 +88,25 @@ abstract public class KeelAbstractSocketWrapper {
                 });
     }
 
-    @NotNull
+
     protected LoggerFactory getLoggerFactory() {
         return keel.getLoggerFactory();
     }
 
-    public final @NotNull SpecificLogger<SocketSpecificLog> getLogger() {
+    public final SpecificLogger<SocketSpecificLog> getLogger() {
         return logger;
     }
 
-    @NotNull
+
     private SpecificLogger<SocketSpecificLog> buildLogger() {
         return getLoggerFactory().createLogger(SocketSpecificLog.TopicTcpSocket, () -> new SocketSpecificLog().classification(List.of("socket_id:" + socketID)));
     }
 
-    public @NotNull String getSocketID() {
+    public String getSocketID() {
         return socketID;
     }
 
-    @NotNull
+
     abstract protected Future<Void> whenBufferComes(Buffer incomingBuffer);
 
     protected void whenReadToEnd() {
@@ -125,12 +121,12 @@ abstract public class KeelAbstractSocketWrapper {
 
     }
 
-    protected void whenExceptionOccurred(@NotNull Throwable throwable) {
+    protected void whenExceptionOccurred(Throwable throwable) {
 
     }
 
-    @NotNull
-    public Future<Void> write(@NotNull String s) {
+
+    public Future<Void> write(String s) {
         Future<Void> future = this.socket.write(s);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
@@ -139,8 +135,8 @@ abstract public class KeelAbstractSocketWrapper {
         return future;
     }
 
-    @NotNull
-    public Future<Void> write(@NotNull String s, @NotNull String enc) {
+
+    public Future<Void> write(String s, String enc) {
         Future<Void> future = this.socket.write(s, enc);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
@@ -149,8 +145,8 @@ abstract public class KeelAbstractSocketWrapper {
         return future;
     }
 
-    @NotNull
-    public Future<Void> write(@NotNull Buffer buffer) {
+
+    public Future<Void> write(Buffer buffer) {
         Future<Void> future = this.socket.write(buffer);
         if (this.socket.writeQueueFull()) {
             this.socket.pause();
@@ -159,32 +155,32 @@ abstract public class KeelAbstractSocketWrapper {
         return future;
     }
 
-    @Nullable
-    public SocketAddress getRemoteAddress() {
+
+    public @Nullable SocketAddress getRemoteAddress() {
         return this.socket.remoteAddress();
     }
 
-    @Nullable
-    public SocketAddress getLocalAddress() {
+
+    public @Nullable SocketAddress getLocalAddress() {
         return this.socket.localAddress();
     }
 
-    @NotNull
+
     public String getRemoteAddressString() {
         return this.socket.remoteAddress().host() + ":" + this.socket.remoteAddress().port();
     }
 
-    @NotNull
+
     public String getLocalAddressString() {
         return this.socket.localAddress().host() + ":" + this.socket.localAddress().port();
     }
 
-    @NotNull
+
     public Future<Void> close() {
         return this.socket.close();
     }
 
-    @NotNull
+
     public KeelAbstractSocketWrapper setMaxSize(int maxSize) {
         this.socket.setWriteQueueMaxSize(maxSize);
         return this;

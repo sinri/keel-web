@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
+import org.jspecify.annotations.NullMarked;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelFastDocsKit {
     private final StaticHandler staticHandler;
     private final String rootURLPath;

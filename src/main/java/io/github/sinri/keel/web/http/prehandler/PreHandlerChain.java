@@ -7,8 +7,8 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,42 +21,32 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class PreHandlerChain implements KeelHolder {
     /**
      * @see KeelPlatformHandler
      */
-    @NotNull
     protected final List<PlatformHandler> platformHandlers = new ArrayList<>();
-    @NotNull
     protected final List<SecurityPolicyHandler> securityPolicyHandlers = new ArrayList<>();
-    @NotNull
     protected final List<ProtocolUpgradeHandler> protocolUpgradeHandlers = new ArrayList<>();
-    @NotNull
     protected final List<MultiTenantHandler> multiTenantHandlers = new ArrayList<>();
     /**
      * Tells who the user is.
      *
      * @see SimpleAuthenticationHandler
      */
-    @NotNull
     protected final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
-    @NotNull
     protected final List<InputTrustHandler> inputTrustHandlers = new ArrayList<>();
     /**
      * Tells what the user is allowed to do
      */
-    @NotNull
     protected final List<AuthorizationHandler> authorizationHandlers = new ArrayList<>();
-    @NotNull
     protected final List<Handler<RoutingContext>> userHandlers = new ArrayList<>();
-    @NotNull
     private final Keel keel;
-    @NotNull
     protected String uploadDirectory = BodyHandler.DEFAULT_UPLOADS_DIRECTORY;
-    @Nullable
-    protected Handler<RoutingContext> failureHandler = null;
+    protected @Nullable Handler<RoutingContext> failureHandler = null;
 
-    public PreHandlerChain(@NotNull Keel keel) {
+    public PreHandlerChain(Keel keel) {
         this.keel = keel;
     }
 
@@ -67,11 +57,11 @@ public class PreHandlerChain implements KeelHolder {
      * @param delegate 给定的{@link AuthenticationDelegate}实例，提供认证逻辑，解析请求上下文并异步确定对应授权访问者身份
      * @return {@link AuthenticationHandler}实例
      */
-    protected static AuthenticationHandler buildAuthenticationHandlerWithDelegate(@NotNull AuthenticationDelegate delegate) {
+    protected static AuthenticationHandler buildAuthenticationHandlerWithDelegate(AuthenticationDelegate delegate) {
         return SimpleAuthenticationHandler.create().authenticate(delegate::authenticate);
     }
 
-    public final void executeHandlers(@NotNull Route route, @NotNull ApiMeta apiMeta) {
+    public final void executeHandlers(Route route, ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
         // PLATFORM
         route.handler(new KeelPlatformHandler(getVertx()));
@@ -111,7 +101,7 @@ public class PreHandlerChain implements KeelHolder {
     }
 
     @Override
-    public @NotNull Keel getKeel() {
+    public Keel getKeel() {
         return keel;
     }
 }

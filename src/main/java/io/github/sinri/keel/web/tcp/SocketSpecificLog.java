@@ -4,7 +4,7 @@ import io.github.sinri.keel.core.utils.BinaryUtils;
 import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 
 /**
@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class SocketSpecificLog extends SpecificLog<SocketSpecificLog> {
     public static final String TopicTcpSocket = "TcpSocket";
 
@@ -19,7 +20,7 @@ public final class SocketSpecificLog extends SpecificLog<SocketSpecificLog> {
         super();
     }
 
-    public SocketSpecificLog buffer(@NotNull Buffer buffer) {
+    public SocketSpecificLog buffer(Buffer buffer) {
         this.context("buffer", new JsonObject()
                 .put("buffer_content", BinaryUtils.encodeHexWithUpperDigits(buffer))
                 .put("buffer_size", buffer.length())

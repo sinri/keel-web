@@ -5,7 +5,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.NetSocket;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -15,22 +16,23 @@ import java.util.function.Function;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     private Function<Buffer, Future<Void>> incomingBufferProcessor = buffer -> Future.succeededFuture();
-    private Handler<Void> readToEndHandler = event -> {
+    private Handler<@Nullable Void> readToEndHandler = event -> {
     };
-    private Handler<Void> drainHandler = event -> {
+    private Handler<@Nullable Void> drainHandler = event -> {
     };
-    private Handler<Void> closeHandler = event -> {
+    private Handler<@Nullable Void> closeHandler = event -> {
     };
     private Consumer<Throwable> exceptionHandler = throwable -> {
     };
 
-    public KeelBasicSocketWrapper(@NotNull Keel keel, NetSocket socket) {
+    public KeelBasicSocketWrapper(Keel keel, NetSocket socket) {
         super(keel, socket);
     }
 
-    public KeelBasicSocketWrapper(@NotNull Keel keel, NetSocket socket, String socketID) {
+    public KeelBasicSocketWrapper(Keel keel, NetSocket socket, String socketID) {
         super(keel, socket, socketID);
     }
 
@@ -60,7 +62,7 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     }
 
     @Override
-    protected @NotNull Future<Void> whenBufferComes(Buffer incomingBuffer) {
+    protected Future<Void> whenBufferComes(Buffer incomingBuffer) {
         return incomingBufferProcessor.apply(incomingBuffer);
     }
 
@@ -83,7 +85,7 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     }
 
     @Override
-    protected void whenExceptionOccurred(@NotNull Throwable throwable) {
+    protected void whenExceptionOccurred(Throwable throwable) {
         super.whenExceptionOccurred(throwable);
         exceptionHandler.accept(throwable);
     }

@@ -7,8 +7,8 @@ import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -22,9 +22,10 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
+@NullMarked
 class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder<JsonObject> {
 
-    public KeelWebResponderCommonApiImpl(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
+    public KeelWebResponderCommonApiImpl(RoutingContext routingContext, SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         super(routingContext, issueRecorder);
     }
 
@@ -43,13 +44,12 @@ class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder<JsonObject>
     }
 
     @Override
-    @NotNull
     public String contentTypeToRespond() {
         return "application/json";
     }
 
     @Override
-    public void respondOnFailure(@NotNull KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox) {
+    public void respondOnFailure(KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox) {
         JsonObject resp;
         try {
             Objects.requireNonNull(dataValueBox);
@@ -66,7 +66,7 @@ class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder<JsonObject>
         getRoutingContext().json(resp);
     }
 
-    protected final JsonObject buildResponseBody(Code code, JsonObject data) {
+    protected final JsonObject buildResponseBody(Code code, @Nullable JsonObject data) {
         return new JsonObject()
                 .put("request_id", readRequestID())
                 .put("code", code.name())

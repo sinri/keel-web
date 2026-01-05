@@ -5,14 +5,14 @@ import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.SimpleAuthenticationHandler;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * 用于{@link SimpleAuthenticationHandler}构建的代理定义。
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface AuthenticationDelegate extends KeelHolder {
-    @NotNull
-    Future<User> authenticate(@NotNull RoutingContext routingContext);
+    Future<User> authenticate(RoutingContext routingContext);
 }

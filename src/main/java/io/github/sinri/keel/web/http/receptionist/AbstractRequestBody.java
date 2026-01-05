@@ -3,7 +3,7 @@ package io.github.sinri.keel.web.http.receptionist;
 import io.github.sinri.keel.base.json.UnmodifiableJsonifiableEntityImpl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 
@@ -11,15 +11,17 @@ import java.util.Objects;
  * 自待处理请求对象{@link RoutingContext}中抽取请求体并进行读取。
  * <p>
  * 请求对象的 Content Type 可以是 JSON 和 FORM（包括分块支持）。
+ *
  * @since 5.0.0
  */
+@NullMarked
 abstract public class AbstractRequestBody extends UnmodifiableJsonifiableEntityImpl {
 
-    public AbstractRequestBody(@NotNull RoutingContext routingContext) {
+    public AbstractRequestBody(RoutingContext routingContext) {
         super(parse(routingContext));
     }
 
-    private static JsonObject parse(@NotNull RoutingContext routingContext) {
+    private static JsonObject parse(RoutingContext routingContext) {
         Objects.requireNonNull(routingContext);
         String contentType = routingContext.request().headers().get("Content-Type");
         if (contentType != null) {

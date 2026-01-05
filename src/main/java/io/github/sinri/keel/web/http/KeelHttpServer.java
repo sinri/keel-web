@@ -11,26 +11,26 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 /**
  * Keel HTTP 服务基础类。
  *
  * @since 5.0.0
  */
+@NullMarked
 abstract public class KeelHttpServer extends AbstractKeelVerticle {
-    @NotNull
     public static final String CONFIG_HTTP_SERVER_PORT = "http_server_port";
-    @NotNull
     public static final String CONFIG_HTTP_SERVER_OPTIONS = "http_server_options";
     private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
 
-    @Nullable
-    protected HttpServer server;
-    private Logger httpServerLogger;
+    protected @Nullable HttpServer server;
+    private @Nullable Logger httpServerLogger;
 
-    public KeelHttpServer(@NotNull Keel keel) {
+    public KeelHttpServer(Keel keel) {
         super(keel);
     }
 
@@ -40,7 +40,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
         return config.getInteger(CONFIG_HTTP_SERVER_PORT, DEFAULT_HTTP_SERVER_PORT);
     }
 
-    @NotNull
     protected HttpServerOptions getHttpServerOptions() {
         JsonObject config = this.config();
         if (config != null) {
@@ -52,7 +51,7 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
         return new HttpServerOptions().setPort(getHttpServerPort());
     }
 
-    protected abstract void configureRoutes(@NotNull Router router);
+    protected abstract void configureRoutes(Router router);
 
     /**
      * Executes tasks or setup logic that needs to be completed before the HTTP server starts.
@@ -63,7 +62,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
      *         tasks,
      *         or fails with an exception if any errors occur during the process.
      */
-    @NotNull
     protected Future<Void> beforeStartServer() {
         return Future.succeededFuture();
     }
@@ -77,13 +75,12 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
      *         completion of all post-shutdown tasks, or fails with an exception if
      *         an error occurs during the execution of these tasks.
      */
-    @NotNull
     protected Future<Void> afterShutdownServer() {
         return Future.succeededFuture();
     }
 
     @Override
-    protected @NotNull Future<Void> startVerticle() {
+    protected Future<Void> startVerticle() {
         this.httpServerLogger = buildHttpServerLogger();
 
         var server = getVertx().createHttpServer(getHttpServerOptions());
@@ -109,17 +106,16 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
                         }));
     }
 
-    @NotNull
     protected final Logger buildHttpServerLogger() {
         return getKeel().getLoggerFactory().createLogger("KeelHttpServer");
     }
 
     public final Logger getHttpServerLogger() {
-        return httpServerLogger;
+        return Objects.requireNonNull(httpServerLogger);
     }
 
     @Override
-    protected @NotNull Future<Void> stopVerticle() {
+    protected Future<Void> stopVerticle() {
         if (server == null) return Future.succeededFuture();
         return server.close()
                      .compose(v -> {
@@ -142,7 +138,6 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
      * @return a {@link Future} that completes with the deployment ID if the deployment is successful,
      *         or fails with an exception if the deployment fails.
      */
-    @NotNull
     public Future<String> deployMe() {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         if (ReflectionUtils.isVirtualThreadsAvailable()) {

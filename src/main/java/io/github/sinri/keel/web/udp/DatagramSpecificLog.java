@@ -4,7 +4,7 @@ import io.github.sinri.keel.core.utils.BinaryUtils;
 import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 
 /**
@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @since 3.2.0
  */
+@NullMarked
 public final class DatagramSpecificLog extends SpecificLog<DatagramSpecificLog> {
     public static final String TopicUdpDatagram = "UdpDatagram";
 
@@ -20,7 +21,7 @@ public final class DatagramSpecificLog extends SpecificLog<DatagramSpecificLog> 
     }
 
 
-    private DatagramSpecificLog buffer(@NotNull Buffer buffer, @NotNull String address, int port, @NotNull String action) {
+    private DatagramSpecificLog buffer(Buffer buffer, String address, int port, String action) {
         this.context(action, new JsonObject()
                     .put("address", address)
                     .put("port", port)
@@ -32,11 +33,11 @@ public final class DatagramSpecificLog extends SpecificLog<DatagramSpecificLog> 
         return this;
     }
 
-    public DatagramSpecificLog bufferSent(@NotNull Buffer buffer, @NotNull String address, int port) {
+    public DatagramSpecificLog bufferSent(Buffer buffer, String address, int port) {
         return this.buffer(buffer, address, port, "sent_to");
     }
 
-    public DatagramSpecificLog bufferReceived(@NotNull Buffer buffer, @NotNull String address, int port) {
+    public DatagramSpecificLog bufferReceived(Buffer buffer, String address, int port) {
         return this.buffer(buffer, address, port, "received_from");
     }
 }

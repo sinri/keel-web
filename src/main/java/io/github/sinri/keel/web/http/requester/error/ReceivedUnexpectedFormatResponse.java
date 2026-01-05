@@ -1,8 +1,8 @@
 package io.github.sinri.keel.web.http.requester.error;
 
 import io.vertx.core.buffer.Buffer;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -10,8 +10,9 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class ReceivedUnexpectedFormatResponse extends ReceivedUnexpectedResponse {
-    public ReceivedUnexpectedFormatResponse(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public ReceivedUnexpectedFormatResponse(String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         super(requestLabel, "received response with body in unexpected format", responseStatusCode, responseBody);
     }
 }

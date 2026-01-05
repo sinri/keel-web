@@ -8,7 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.datagram.DatagramSocket;
 import io.vertx.core.net.SocketAddress;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -18,24 +18,21 @@ import java.util.function.BiConsumer;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelUDPTransceiver implements Closeable {
     private final int port;
-    @NotNull
     private final DatagramSocket udpServer;
-    @NotNull
     private final SpecificLogger<DatagramSpecificLog> logger;
-    @NotNull
     private String address = "0.0.0.0";
-    @NotNull
     private BiConsumer<SocketAddress, Buffer> datagramSocketConsumer = (sender, buffer) -> {
         // do nothing
     };
 
     public KeelUDPTransceiver(
-            @NotNull DatagramSocket udpServer,
+            DatagramSocket udpServer,
             int port,
-            @NotNull String address,
-            @NotNull LoggerFactory loggerFactory
+            String address,
+            LoggerFactory loggerFactory
     ) {
         this.port = port;
         this.address = address;
@@ -43,7 +40,7 @@ public class KeelUDPTransceiver implements Closeable {
         this.logger = loggerFactory.createLogger(DatagramSpecificLog.TopicUdpDatagram, DatagramSpecificLog::new);
     }
 
-    public @NotNull SpecificLogger<DatagramSpecificLog> getLogger() {
+    public SpecificLogger<DatagramSpecificLog> getLogger() {
         return logger;
     }
 

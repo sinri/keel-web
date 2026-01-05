@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -13,15 +14,15 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @since 5.0.0
  */
+@NullMarked
 @Repeatable(ApiMetaContainer.class)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ApiMeta {
-    @NotNull
     String virtualHost() default "";
-    @NotNull
+
     String routePath();
-    @NotNull
-    String[] allowMethods() default {"POST"};
+
+    String @Nullable [] allowMethods() default {"POST"};
 
     boolean requestBodyNeeded() default true;
 
@@ -40,6 +41,5 @@ public @interface ApiMeta {
      */
     boolean isDeprecated() default false;
 
-    @NotNull
     String remark() default "";
 }

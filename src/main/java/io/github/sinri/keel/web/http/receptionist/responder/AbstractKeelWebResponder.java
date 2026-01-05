@@ -5,7 +5,7 @@ import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.prehandler.KeelPlatformHandler;
 import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Objects;
@@ -17,9 +17,10 @@ import static io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist.par
  *
  * @since 5.0.0
  */
+@NullMarked
 public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R> {
-    private final @NotNull RoutingContext routingContext;
-    private final @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder;
+    private final RoutingContext routingContext;
+    private final SpecificLogger<ReceptionistSpecificLog> issueRecorder;
 
     /**
      * Constructs an AbstractKeelWebResponder instance with the given routing context and issue recorder.
@@ -28,7 +29,7 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      * @param issueRecorder  the recorder for tracking and recording issues during the processing of the request, must
      *                       not be null
      */
-    public AbstractKeelWebResponder(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
+    public AbstractKeelWebResponder(RoutingContext routingContext, SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         this.routingContext = routingContext;
         this.issueRecorder = issueRecorder;
     }
@@ -38,7 +39,6 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      *
      * @return the {@link RoutingContext} instance associated with this responder, never null
      */
-    @NotNull
     public RoutingContext getRoutingContext() {
         return routingContext;
     }
@@ -50,7 +50,6 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      * @return an instance of {@link SpecificLogger} configured for handling {@link ReceptionistSpecificLog},
      *         never null
      */
-    @NotNull
     public SpecificLogger<ReceptionistSpecificLog> getIssueRecorder() {
         return issueRecorder;
     }
@@ -83,18 +82,18 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      * @return the request id.
      *
      */
-    public @NotNull String readRequestID() {
+    public String readRequestID() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_ID));
     }
 
     /**
      * @return the request start time.
      */
-    public @NotNull Long readRequestStartTime() {
+    public long readRequestStartTime() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_START_TIME));
     }
 
-    public @NotNull List<String> readRequestIPChain() {
+    public List<String> readRequestIPChain() {
         return parseWebClientIPChain(routingContext);
     }
 }

@@ -10,7 +10,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class KeelWebReceptionistLoader {
 
     /**
@@ -39,10 +40,10 @@ public final class KeelWebReceptionistLoader {
      * @param <R>                 具体要通过反射支持的特定的请求接待类的类型。
      */
     public static <R extends KeelWebReceptionist> void loadPackage(
-            @NotNull Keel keel,
-            @NotNull Router router,
-            @NotNull String packageName,
-            @NotNull Class<R> classOfReceptionist
+            Keel keel,
+            Router router,
+            String packageName,
+            Class<R> classOfReceptionist
     ) {
         Set<Class<? extends R>> allClasses = ReflectionUtils.seekClassDescendantsInPackage(packageName, classOfReceptionist);
 
@@ -65,23 +66,26 @@ public final class KeelWebReceptionistLoader {
      * @param c      具体要通过反射支持的请求接待类
      * @param <R>    具体要通过反射支持的请求接待类的类型。
      */
-    public static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c) {
+    public static <R extends KeelWebReceptionist> void loadClass(Keel keel, Router router, Class<? extends R> c) {
         ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
             loadClass(keel, router, c, apiMeta);
         }
     }
 
-    private static <R extends KeelWebReceptionist> void loadClass(@NotNull Keel keel, @NotNull Router router, @NotNull Class<? extends R> c, ApiMeta apiMeta) {
+    private static <R extends KeelWebReceptionist> void loadClass(Keel keel, Router router, Class<? extends R> c, ApiMeta apiMeta) {
         Logger logger = keel.getLoggerFactory()
                             .createLogger(KeelWebReceptionistLoader.class.getName());
         logger.info(r -> r
                 .classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                 .message("Loading " + c.getName())
                 .context(j -> {
-                    JsonArray methods = new JsonArray();
-                    Arrays.stream(apiMeta.allowMethods()).forEach(methods::add);
-                    j.put("allowMethods", methods);
+                    String[] allowMethods = apiMeta.allowMethods();
+                    if (allowMethods != null) {
+                        JsonArray methods = new JsonArray();
+                        Arrays.stream(allowMethods).forEach(methods::add);
+                        j.put("allowMethods", methods);
+                    }
                     j.put("routePath", apiMeta.routePath());
                     if (apiMeta.isDeprecated()) {
                         j.put("isDeprecated", true);
@@ -120,9 +124,9 @@ public final class KeelWebReceptionistLoader {
 
         while (true) {
             Class<?> child = classRef.get();
-            if (child == null) {
-                break;
-            }
+            //            if (child == null) {
+            //                break;
+            //            }
             if (child == KeelWebReceptionist.class) {
                 break;
             }

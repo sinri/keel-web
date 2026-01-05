@@ -2,8 +2,8 @@ package io.github.sinri.keel.web.http.requester.error;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -11,13 +11,13 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class ReceivedFailedResponse extends ReceivedUnexpectedResponse {
-    public ReceivedFailedResponse(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public ReceivedFailedResponse(String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         super(requestLabel, "received response with code as Failed", responseStatusCode, responseBody);
     }
 
-    @Nullable
-    public JsonObject getResponseBodyAsJsonObject() {
+    public @Nullable JsonObject getResponseBodyAsJsonObject() {
         Buffer responseBody = getResponseBody();
         if (responseBody == null) {
             return null;

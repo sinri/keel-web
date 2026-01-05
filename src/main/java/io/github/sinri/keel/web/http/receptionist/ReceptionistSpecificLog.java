@@ -3,8 +3,8 @@ package io.github.sinri.keel.web.http.receptionist;
 import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -12,21 +12,22 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class ReceptionistSpecificLog extends SpecificLog<ReceptionistSpecificLog> {
     public static final String TopicReceptionist = "Receptionist";
     public static final String AttributeRequest = "request";
     public static final String AttributeResponse = "response";
     public static final String AttributeRespondInfo = "RespondInfo";
 
-    public ReceptionistSpecificLog(@NotNull String requestId) {
+    public ReceptionistSpecificLog(String requestId) {
         super();
         this.extra("request_id", requestId);
     }
 
     public ReceptionistSpecificLog setRequest(
-            @NotNull HttpMethod method,
-            @NotNull String path,
-            @NotNull Class<?> receptionistClass,
+            HttpMethod method,
+            String path,
+            Class<?> receptionistClass,
             @Nullable String query,
             @Nullable String body
     ) {

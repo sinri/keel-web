@@ -11,8 +11,8 @@ import io.vertx.core.http.Cookie;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +23,13 @@ import java.util.Objects;
  *
  * @since 5.0.0
  */
+@NullMarked
 public abstract class KeelWebReceptionist implements KeelHolder {
-    private final @NotNull RoutingContext routingContext;
-    private final @NotNull SpecificLogger<ReceptionistSpecificLog> logger;
-    private final @NotNull Keel keel;
+    private final RoutingContext routingContext;
+    private final SpecificLogger<ReceptionistSpecificLog> logger;
+    private final Keel keel;
 
-    public KeelWebReceptionist(@NotNull Keel keel, @NotNull RoutingContext routingContext) {
+    public KeelWebReceptionist(Keel keel, RoutingContext routingContext) {
         this.keel = keel;
         this.routingContext = routingContext;
         this.logger = getLoggerFactory().createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
@@ -44,8 +45,7 @@ public abstract class KeelWebReceptionist implements KeelHolder {
         ));
     }
 
-    @NotNull
-    public static List<String> parseWebClientIPChain(@NotNull RoutingContext ctx) {
+    public static List<String> parseWebClientIPChain(RoutingContext ctx) {
         // X-Forwarded-For
         JsonArray clientIPChain = new JsonArray();
         String xForwardedFor = ctx.request().getHeader("X-Forwarded-For");
@@ -62,16 +62,14 @@ public abstract class KeelWebReceptionist implements KeelHolder {
         return list;
     }
 
-    public final @NotNull Keel getKeel() {
+    public final Keel getKeel() {
         return keel;
     }
 
-    @NotNull
     protected final RoutingContext getRoutingContext() {
         return routingContext;
     }
 
-    @NotNull
     public final Vertx getVertx() {
         return getRoutingContext().vertx();
     }
@@ -83,12 +81,9 @@ public abstract class KeelWebReceptionist implements KeelHolder {
         return false;
     }
 
-    @NotNull
     abstract protected LoggerFactory getLoggerFactory();
 
 
-
-    @NotNull
     public final SpecificLogger<ReceptionistSpecificLog> getLogger() {
         return logger;
     }
@@ -103,14 +98,14 @@ public abstract class KeelWebReceptionist implements KeelHolder {
     /**
      * @return 后端赋予请求的ID
      */
-    public @NotNull String readRequestID() {
+    public String readRequestID() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_ID));
     }
 
     /**
      * @return 请求到达后端开始处理的时间
      */
-    public @NotNull Long readRequestStartTime() {
+    public long readRequestStartTime() {
         return Objects.requireNonNull(routingContext.get(KeelPlatformHandler.KEEL_REQUEST_START_TIME));
     }
 
@@ -118,7 +113,7 @@ public abstract class KeelWebReceptionist implements KeelHolder {
      *
      * @return 调用方请求 IP 链
      */
-    public @NotNull List<String> readRequestIPChain() {
+    public List<String> readRequestIPChain() {
         return parseWebClientIPChain(routingContext);
     }
 
@@ -126,12 +121,11 @@ public abstract class KeelWebReceptionist implements KeelHolder {
      *
      * @return 获取请求上下文中登记的用户实体
      */
-    @Nullable
-    public User readRequestUser() {
+    public @Nullable User readRequestUser() {
         return routingContext.user();
     }
 
-    protected void addCookie(@NotNull String name, @NotNull String value, @Nullable String path, @Nullable Long maxAge, boolean httpOnly) {
+    protected void addCookie(String name, String value, @Nullable String path, @Nullable Long maxAge, boolean httpOnly) {
         Cookie cookie1 = Cookie.cookie(name, value);
         cookie1.setPath(Objects.requireNonNullElse(path, "/"));
         if (maxAge != null) {
@@ -141,7 +135,7 @@ public abstract class KeelWebReceptionist implements KeelHolder {
         getRoutingContext().response().addCookie(cookie1);
     }
 
-    protected void removeCookie(@NotNull String name) {
+    protected void removeCookie(String name) {
         getRoutingContext().response().removeCookie(name);
     }
 }

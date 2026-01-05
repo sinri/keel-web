@@ -3,8 +3,8 @@ package io.github.sinri.keel.web.http.requester.extractor;
 import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedResponse;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -13,17 +13,17 @@ import org.jetbrains.annotations.Nullable;
  * @param <T> 从接口请求回复报文中萃取的值的类型
  * @since 5.0.0
  */
+@NullMarked
 public abstract class KeelWebResponseExtractor<T> {
-    @NotNull
     private final String requestLabel;
     private final int responseStatusCode;
     private final @Nullable Buffer responseBody;
 
-    public KeelWebResponseExtractor(@NotNull String requestLabel, @NotNull HttpResponse<Buffer> response) {
+    public KeelWebResponseExtractor(String requestLabel, HttpResponse<Buffer> response) {
         this(requestLabel, response.statusCode(), response.body());
     }
 
-    public KeelWebResponseExtractor(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public KeelWebResponseExtractor(String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         this.requestLabel = requestLabel;
         this.responseStatusCode = responseStatusCode;
         this.responseBody = responseBody;
@@ -34,7 +34,6 @@ public abstract class KeelWebResponseExtractor<T> {
     }
 
 
-    @NotNull
     public String getRequestLabel() {
         return requestLabel;
     }

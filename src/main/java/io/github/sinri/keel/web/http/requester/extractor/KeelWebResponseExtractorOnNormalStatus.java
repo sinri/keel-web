@@ -4,8 +4,8 @@ import io.github.sinri.keel.web.http.requester.error.ReceivedAbnormalStatusRespo
 import io.github.sinri.keel.web.http.requester.error.ReceivedUnexpectedResponse;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpResponse;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -13,18 +13,18 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelWebResponseExtractorOnNormalStatus extends KeelWebResponseExtractor<Buffer> {
-    public KeelWebResponseExtractorOnNormalStatus(@NotNull String requestLabel, HttpResponse<Buffer> response) {
+    public KeelWebResponseExtractorOnNormalStatus(String requestLabel, HttpResponse<Buffer> response) {
         super(requestLabel, response);
     }
 
-    public KeelWebResponseExtractorOnNormalStatus(@NotNull String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
+    public KeelWebResponseExtractorOnNormalStatus(String requestLabel, int responseStatusCode, @Nullable Buffer responseBody) {
         super(requestLabel, responseStatusCode, responseBody);
     }
 
     @Override
-    @Nullable
-    public Buffer extract() throws ReceivedUnexpectedResponse {
+    public @Nullable Buffer extract() throws ReceivedUnexpectedResponse {
         var responseStatusCode = this.getResponseStatusCode();
         if (responseStatusCode != 200) {
             throw new ReceivedAbnormalStatusResponse(getRequestLabel(), responseStatusCode, this.getResponseBody());

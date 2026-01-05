@@ -6,7 +6,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.Counter;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.PlatformHandler;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Random;
 import java.util.UUID;
@@ -19,20 +19,19 @@ import java.util.UUID;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class KeelPlatformHandler implements PlatformHandler {
-    @NotNull
     public final static String KEEL_REQUEST_ID = "KEEL_REQUEST_ID"; // -> String
-    @NotNull
     public final static String KEEL_REQUEST_START_TIME = "KEEL_REQUEST_START_TIME"; // -> long * 0.001 second
 
-    private final @NotNull Vertx vertx;
+    private final Vertx vertx;
 
-    public KeelPlatformHandler(@NotNull Vertx vertx) {
+    public KeelPlatformHandler(Vertx vertx) {
         this.vertx = vertx;
     }
 
     @Override
-    public void handle(@NotNull RoutingContext routingContext) {
+    public void handle(RoutingContext routingContext) {
         // BEFORE ASYNC PAUSE
         routingContext.request().pause();
         // START !

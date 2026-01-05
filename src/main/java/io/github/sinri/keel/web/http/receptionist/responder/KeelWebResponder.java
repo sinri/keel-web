@@ -5,8 +5,8 @@ import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -17,19 +17,20 @@ import org.jetbrains.annotations.Nullable;
  * @param <R> 返回内容的承载类型
  * @since 5.0.0
  */
+@NullMarked
 public interface KeelWebResponder<R> {
-    static KeelWebResponder<JsonObject> createCommonInstance(@NotNull RoutingContext routingContext, @NotNull SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
+    static KeelWebResponder<JsonObject> createCommonInstance(RoutingContext routingContext, SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
         return new KeelWebResponderCommonApiImpl(routingContext, issueRecorder);
     }
 
     void respondOnSuccess(@Nullable R data);
 
-    void respondOnFailure(@NotNull KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox);
+    void respondOnFailure(KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox);
 
     /**
      * @param throwable the thrown {@link KeelWebApiError} instance
      */
-    default void respondOnFailure(@NotNull KeelWebApiError throwable) {
+    default void respondOnFailure(KeelWebApiError throwable) {
         respondOnFailure(throwable, null);
     }
 
@@ -39,6 +40,5 @@ public interface KeelWebResponder<R> {
      *
      * @return 正常应答时，返回头 Content-Type 的内容，应匹配返回内容的承载类型
      */
-    @NotNull
     String contentTypeToRespond();
 }

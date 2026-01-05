@@ -5,7 +5,7 @@ import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * 指定使用异步逻辑构成主逻辑的请求接待类。
@@ -14,10 +14,11 @@ import org.jetbrains.annotations.NotNull;
  * @see KeelWebResponder
  * @since 5.0.0
  */
+@NullMarked
 abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
-    private final @NotNull KeelWebResponder<R> responder;
+    private final KeelWebResponder<R> responder;
 
-    public KeelWebFutureReceptionist(@NotNull Keel keel, @NotNull RoutingContext routingContext) {
+    public KeelWebFutureReceptionist(Keel keel, RoutingContext routingContext) {
         super(keel, routingContext);
         this.responder = buildResponder();
     }
@@ -26,10 +27,8 @@ abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
      *
      * @return an instance of {@link KeelWebResponder}.
      */
-    @NotNull
     abstract protected KeelWebResponder<R> buildResponder();
 
-    @NotNull
     public final KeelWebResponder<R> getResponder() {
         return responder;
     }
@@ -66,6 +65,5 @@ abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
               });
     }
 
-    @NotNull
     abstract protected Future<R> handleForFuture();
 }

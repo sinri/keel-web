@@ -7,7 +7,7 @@ module io.github.sinri.keel.web {
     requires transitive io.vertx.core;
     requires transitive io.vertx.web;
     requires transitive io.vertx.web.client;
-    requires static org.jetbrains.annotations; // compile-time only
+    requires static org.jspecify; // compile-time only
 
     // Public API exports
     exports io.github.sinri.keel.web.http;
