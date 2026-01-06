@@ -1,12 +1,12 @@
 package io.github.sinri.keel.web.http;
 
-import io.github.sinri.keel.base.Keel;
-import io.github.sinri.keel.base.verticles.AbstractKeelVerticle;
+import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
@@ -22,7 +22,7 @@ import java.util.Objects;
  * @since 5.0.0
  */
 @NullMarked
-abstract public class KeelHttpServer extends AbstractKeelVerticle {
+abstract public class KeelHttpServer extends KeelVerticleBase {
     public static final String CONFIG_HTTP_SERVER_PORT = "http_server_port";
     public static final String CONFIG_HTTP_SERVER_OPTIONS = "http_server_options";
     private static final int DEFAULT_HTTP_SERVER_PORT = 8080;
@@ -30,8 +30,8 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
     protected @Nullable HttpServer server;
     private @Nullable Logger httpServerLogger;
 
-    public KeelHttpServer(Keel keel) {
-        super(keel);
+    public KeelHttpServer() {
+        super();
     }
 
     protected int getHttpServerPort() {
@@ -138,11 +138,11 @@ abstract public class KeelHttpServer extends AbstractKeelVerticle {
      * @return a {@link Future} that completes with the deployment ID if the deployment is successful,
      *         or fails with an exception if the deployment fails.
      */
-    public Future<String> deployMe() {
+    public Future<String> deployMe(Vertx vertx) {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         if (ReflectionUtils.isVirtualThreadsAvailable()) {
             deploymentOptions.setThreadingModel(ThreadingModel.VIRTUAL_THREAD);
         }
-        return super.deployMe(deploymentOptions);
+        return super.deployMe(vertx, deploymentOptions);
     }
 }

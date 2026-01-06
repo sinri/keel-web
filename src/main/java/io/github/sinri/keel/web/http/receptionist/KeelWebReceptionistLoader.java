@@ -1,6 +1,5 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.web.http.prehandler.PreHandlerChain;
@@ -40,22 +39,20 @@ public final class KeelWebReceptionistLoader {
      * @param <R>                 具体要通过反射支持的特定的请求接待类的类型。
      */
     public static <R extends KeelWebReceptionist> void loadPackage(
-            Keel keel,
             Router router,
             String packageName,
-            Class<R> classOfReceptionist
+            Class<R> classOfReceptionist,
+            Logger logger
     ) {
         Set<Class<? extends R>> allClasses = ReflectionUtils.seekClassDescendantsInPackage(packageName, classOfReceptionist);
 
         try {
-            allClasses.forEach(c -> loadClass(keel, router, c));
+            allClasses.forEach(c -> loadClass(router, c, logger));
         } catch (Exception e) {
-            keel.getLoggerFactory()
-                .createLogger(KeelWebReceptionistLoader.class.getName())
-                .error(log -> log
-                        .classification(List.of("KeelWebReceptionistLoader", "loadPackage"))
-                        .exception(e)
-                );
+            logger.error(log -> log
+                    .classification(List.of("KeelWebReceptionistLoader", "loadPackage"))
+                    .exception(e)
+            );
         }
     }
 
@@ -66,16 +63,14 @@ public final class KeelWebReceptionistLoader {
      * @param c      具体要通过反射支持的请求接待类
      * @param <R>    具体要通过反射支持的请求接待类的类型。
      */
-    public static <R extends KeelWebReceptionist> void loadClass(Keel keel, Router router, Class<? extends R> c) {
+    public static <R extends KeelWebReceptionist> void loadClass(Router router, Class<? extends R> c, Logger logger) {
         ApiMeta[] apiMetaArray = ReflectionUtils.getAnnotationsOfClass(c, ApiMeta.class);
         for (var apiMeta : apiMetaArray) {
-            loadClass(keel, router, c, apiMeta);
+            loadClass(router, c, apiMeta, logger);
         }
     }
 
-    private static <R extends KeelWebReceptionist> void loadClass(Keel keel, Router router, Class<? extends R> c, ApiMeta apiMeta) {
-        Logger logger = keel.getLoggerFactory()
-                            .createLogger(KeelWebReceptionistLoader.class.getName());
+    private static <R extends KeelWebReceptionist> void loadClass(Router router, Class<? extends R> c, ApiMeta apiMeta, Logger logger) {
         logger.info(r -> r
                 .classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                 .message("Loading " + c.getName())
@@ -98,7 +93,7 @@ public final class KeelWebReceptionistLoader {
 
         Constructor<? extends R> receptionistConstructor;
         try {
-            receptionistConstructor = c.getConstructor(Keel.class, RoutingContext.class);
+            receptionistConstructor = c.getConstructor(RoutingContext.class);
         } catch (NoSuchMethodException e) {
             logger.error(r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                .message("HANDLER REFLECTION EXCEPTION")
@@ -134,7 +129,7 @@ public final class KeelWebReceptionistLoader {
             if (annotation != null) {
                 Class<? extends PreHandlerChain> preHandlerChainClass = annotation.value();
                 try {
-                    preHandlerChain = preHandlerChainClass.getConstructor(Keel.class).newInstance(keel);
+                    preHandlerChain = preHandlerChainClass.getConstructor().newInstance();
                 } catch (Throwable e) {
                     logger.error(r -> r.classification(List.of("KeelWebReceptionistLoader", "loadClass"))
                                        .message("PreHandlerChain REFLECTION EXCEPTION")
@@ -149,14 +144,14 @@ public final class KeelWebReceptionistLoader {
         }
 
         if (preHandlerChain == null) {
-            preHandlerChain = new PreHandlerChain(keel);
+            preHandlerChain = new PreHandlerChain();
         }
         preHandlerChain.executeHandlers(route, apiMeta);
 
         // finally!
         route.handler(routingContext -> {
             try {
-                R receptionist = receptionistConstructor.newInstance(keel, routingContext);
+                R receptionist = receptionistConstructor.newInstance(routingContext);
                 receptionist.handle();
             } catch (Throwable e) {
                 routingContext.fail(e);

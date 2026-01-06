@@ -1,6 +1,5 @@
 package io.github.sinri.keel.web.http.prehandler;
 
-import io.github.sinri.keel.base.KeelHolder;
 import io.vertx.core.Future;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.RoutingContext;
@@ -13,6 +12,6 @@ import org.jspecify.annotations.NullMarked;
  * @since 5.0.0
  */
 @NullMarked
-public interface AuthenticationDelegate extends KeelHolder {
+public interface AuthenticationDelegate {
     Future<User> authenticate(RoutingContext routingContext);
 }

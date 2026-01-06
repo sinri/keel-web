@@ -1,6 +1,5 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
 import io.vertx.core.Future;
@@ -18,8 +17,8 @@ import org.jspecify.annotations.NullMarked;
 abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
     private final KeelWebResponder<R> responder;
 
-    public KeelWebFutureReceptionist(Keel keel, RoutingContext routingContext) {
-        super(keel, routingContext);
+    public KeelWebFutureReceptionist(RoutingContext routingContext) {
+        super(routingContext);
         this.responder = buildResponder();
     }
 

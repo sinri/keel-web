@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.tcp;
 
-import io.github.sinri.keel.base.Keel;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
+import io.github.sinri.keel.logger.api.factory.SilentLoggerFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -27,35 +28,64 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     };
     private Consumer<Throwable> exceptionHandler = throwable -> {
     };
+    private LoggerFactory loggerFactory = SilentLoggerFactory.getInstance();
 
-    public KeelBasicSocketWrapper(Keel keel, NetSocket socket) {
-        super(keel, socket);
+    public KeelBasicSocketWrapper(NetSocket socket) {
+        super(socket);
     }
 
-    public KeelBasicSocketWrapper(Keel keel, NetSocket socket, String socketID) {
-        super(keel, socket, socketID);
+    public KeelBasicSocketWrapper(NetSocket socket, String socketID) {
+        super(socket, socketID);
     }
 
+    @Override
+    public final LoggerFactory getLoggerFactory() {
+        return loggerFactory;
+    }
+
+    /**
+     * Run before deploying this verticle.
+     */
+    public KeelBasicSocketWrapper setLoggerFactory(LoggerFactory loggerFactory) {
+        this.loggerFactory = loggerFactory;
+        return this;
+    }
+
+    /**
+     * Run before deploying this verticle.
+     */
     public KeelBasicSocketWrapper setCloseHandler(Handler<Void> closeHandler) {
         this.closeHandler = closeHandler;
         return this;
     }
 
+    /**
+     * Run before deploying this verticle.
+     */
     public KeelBasicSocketWrapper setDrainHandler(Handler<Void> drainHandler) {
         this.drainHandler = drainHandler;
         return this;
     }
 
+    /**
+     * Run before deploying this verticle.
+     */
     public KeelBasicSocketWrapper setExceptionHandler(Consumer<Throwable> exceptionHandler) {
         this.exceptionHandler = exceptionHandler;
         return this;
     }
 
+    /**
+     * Run before deploying this verticle.
+     */
     public KeelBasicSocketWrapper setIncomingBufferProcessor(Function<Buffer, Future<Void>> incomingBufferProcessor) {
         this.incomingBufferProcessor = incomingBufferProcessor;
         return this;
     }
 
+    /**
+     * Run before deploying this verticle.
+     */
     public KeelBasicSocketWrapper setReadToEndHandler(Handler<Void> readToEndHandler) {
         this.readToEndHandler = readToEndHandler;
         return this;

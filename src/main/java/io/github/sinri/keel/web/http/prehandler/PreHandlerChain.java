@@ -1,7 +1,5 @@
 package io.github.sinri.keel.web.http.prehandler;
 
-import io.github.sinri.keel.base.Keel;
-import io.github.sinri.keel.base.KeelHolder;
 import io.github.sinri.keel.web.http.receptionist.ApiMeta;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.Route;
@@ -22,7 +20,7 @@ import java.util.List;
  * @since 5.0.0
  */
 @NullMarked
-public class PreHandlerChain implements KeelHolder {
+public class PreHandlerChain {
     /**
      * @see KeelPlatformHandler
      */
@@ -42,12 +40,10 @@ public class PreHandlerChain implements KeelHolder {
      */
     protected final List<AuthorizationHandler> authorizationHandlers = new ArrayList<>();
     protected final List<Handler<RoutingContext>> userHandlers = new ArrayList<>();
-    private final Keel keel;
     protected String uploadDirectory = BodyHandler.DEFAULT_UPLOADS_DIRECTORY;
     protected @Nullable Handler<RoutingContext> failureHandler = null;
 
-    public PreHandlerChain(Keel keel) {
-        this.keel = keel;
+    public PreHandlerChain() {
     }
 
     /**
@@ -64,7 +60,7 @@ public class PreHandlerChain implements KeelHolder {
     public final void executeHandlers(Route route, ApiMeta apiMeta) {
         // === HANDLERS WEIGHT IN ORDER ===
         // PLATFORM
-        route.handler(new KeelPlatformHandler(getVertx()));
+        route.handler(new KeelPlatformHandler());
         if (apiMeta.timeout() > 0) {
             // PlatformHandler
             route.handler(TimeoutHandler.create(apiMeta.timeout(), apiMeta.statusCodeForTimeout()));
@@ -98,10 +94,5 @@ public class PreHandlerChain implements KeelHolder {
         if (failureHandler != null) {
             route.failureHandler(failureHandler);
         }
-    }
-
-    @Override
-    public Keel getKeel() {
-        return keel;
     }
 }

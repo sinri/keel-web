@@ -1,6 +1,5 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
@@ -14,8 +13,8 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public abstract class KeelWebFutureReceptionistInVirtualThread<R> extends KeelWebFutureReceptionist<R> {
-    public KeelWebFutureReceptionistInVirtualThread(Keel keel, RoutingContext routingContext) {
-        super(keel, routingContext);
+    public KeelWebFutureReceptionistInVirtualThread(RoutingContext routingContext) {
+        super(routingContext);
     }
 
     /**

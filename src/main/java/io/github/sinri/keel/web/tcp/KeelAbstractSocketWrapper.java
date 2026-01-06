@@ -1,7 +1,8 @@
 package io.github.sinri.keel.web.tcp;
 
-import io.github.sinri.keel.base.Keel;
+import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.core.servant.funnel.Funnel;
+import io.github.sinri.keel.logger.api.LateObject;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
@@ -23,37 +24,38 @@ import java.util.UUID;
  * @since 5.0.0
  */
 @NullMarked
-abstract public class KeelAbstractSocketWrapper {
+abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
     private final String socketID;
     private final NetSocket socket;
-    private final Keel keel;
     private final Funnel funnel;
-    private final SpecificLogger<SocketSpecificLog> logger;
 
-    public KeelAbstractSocketWrapper(Keel keel, NetSocket socket) {
-        this(keel, socket, UUID.randomUUID().toString());
+    private final LateObject<SpecificLogger<SocketSpecificLog>> lateLogger = new LateObject<>();
+
+    public KeelAbstractSocketWrapper(NetSocket socket) {
+        this(socket, UUID.randomUUID().toString());
     }
 
-    public KeelAbstractSocketWrapper(Keel keel, NetSocket socket, String socketID) {
-        this.keel = keel;
+    public KeelAbstractSocketWrapper(NetSocket socket, String socketID) {
         this.socketID = socketID;
         this.socket = socket;
+        this.funnel = new Funnel();
+    }
 
-        this.logger = this.buildLogger();
+    @Override
+    protected Future<?> startVerticle() {
+        lateLogger.set(this.buildLogger());
+        return this.funnel.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                          .compose(deploymentID -> {
+                              this.socket
+                                      .handler(buffer -> {
+                                          getLogger().info(eventLog -> eventLog
+                                                  .message("READ BUFFER " + buffer.length() + " BYTES")
+                                                  .buffer(buffer)
+                                          );
 
-        this.funnel = new Funnel(keel);
-        this.funnel.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
-
-        this.socket
-                .handler(buffer -> {
-                    getLogger().info(eventLog -> eventLog
-                            .message("READ BUFFER " + buffer.length() + " BYTES")
-                            .buffer(buffer)
-                    );
-
-                    this.funnel.add(() -> whenBufferComes(buffer));
-                })
-                .endHandler(end -> {
+                                          this.funnel.add(() -> whenBufferComes(buffer));
+                                      })
+                                      .endHandler(end -> {
                     /*
                      Set an end handler.
                      Once the stream has ended, and there is no more data to be read,
@@ -61,10 +63,10 @@ abstract public class KeelAbstractSocketWrapper {
                      This handler might be called after the close handler
                      when the socket is paused and there are still buffers to deliver.
                      */
-                    getLogger().info(r -> r.message("READ TO END"));
-                    whenReadToEnd();
-                })
-                .drainHandler(drain -> {
+                                          getLogger().info(r -> r.message("READ TO END"));
+                                          whenReadToEnd();
+                                      })
+                                      .drainHandler(drain -> {
                     /*
                     Set a drain handler on the stream.
                     If the write queue is full,
@@ -73,33 +75,33 @@ abstract public class KeelAbstractSocketWrapper {
                     The stream implementation defines when the drain handler,
                     for example it could be when the queue size has been reduced to maxSize / 2.
                      */
-                    getLogger().info(r -> r.message("BE WRITABLE AGAIN, RESUME"));
-                    socket.resume();
-                    whenDrain();
-                })
-                .closeHandler(close -> {
-                    getLogger().info(r -> r.message("SOCKET CLOSE"));
-                    this.funnel.undeployMe();
-                    whenClose();
-                })
-                .exceptionHandler(throwable -> {
-                    getLogger().error(r -> r.message("socket exception").exception(throwable));
-                    whenExceptionOccurred(throwable);
-                });
+                                          getLogger().info(r -> r.message("BE WRITABLE AGAIN, RESUME"));
+                                          socket.resume();
+                                          whenDrain();
+                                      })
+                                      .closeHandler(close -> {
+                                          getLogger().info(r -> r.message("SOCKET CLOSE"));
+                                          this.funnel.undeployMe();
+                                          whenClose();
+                                      })
+                                      .exceptionHandler(throwable -> {
+                                          getLogger().error(r -> r.message("socket exception").exception(throwable));
+                                          whenExceptionOccurred(throwable);
+                                      });
+                              return Future.succeededFuture();
+                          });
     }
 
-
-    protected LoggerFactory getLoggerFactory() {
-        return keel.getLoggerFactory();
-    }
+    abstract protected LoggerFactory getLoggerFactory();
 
     public final SpecificLogger<SocketSpecificLog> getLogger() {
-        return logger;
+        return lateLogger.get();
     }
 
 
     private SpecificLogger<SocketSpecificLog> buildLogger() {
-        return getLoggerFactory().createLogger(SocketSpecificLog.TopicTcpSocket, () -> new SocketSpecificLog().classification(List.of("socket_id:" + socketID)));
+        return getLoggerFactory().createLogger(SocketSpecificLog.TopicTcpSocket, () -> new SocketSpecificLog()
+                .classification(List.of("socket_id:" + socketID)));
     }
 
     public String getSocketID() {
