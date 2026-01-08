@@ -2,6 +2,7 @@ package io.github.sinri.keel.web.http;
 
 import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -106,8 +107,12 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
                         }));
     }
 
+    protected LoggerFactory getLoggerFactory() {
+        return LoggerFactory.getShared();
+    }
+
     protected final Logger buildHttpServerLogger() {
-        return getKeel().getLoggerFactory().createLogger("KeelHttpServer");
+        return getLoggerFactory().createLogger("KeelHttpServer");
     }
 
     public final Logger getHttpServerLogger() {
