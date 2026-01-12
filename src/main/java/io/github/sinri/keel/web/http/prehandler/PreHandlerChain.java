@@ -32,6 +32,7 @@ public class PreHandlerChain {
      * Tells who the user is.
      *
      * @see SimpleAuthenticationHandler
+     * @see AuthenticationDelegate
      */
     protected final List<AuthenticationHandler> authenticationHandlers = new ArrayList<>();
     protected final List<InputTrustHandler> inputTrustHandlers = new ArrayList<>();
