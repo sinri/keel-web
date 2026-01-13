@@ -20,18 +20,18 @@ import static io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist.par
 @NullMarked
 public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R> {
     private final RoutingContext routingContext;
-    private final SpecificLogger<ReceptionistSpecificLog> issueRecorder;
+    private final SpecificLogger<ReceptionistSpecificLog> logger;
 
     /**
      * Constructs an AbstractKeelWebResponder instance with the given routing context and issue recorder.
      *
      * @param routingContext the routing context associated with the request, must not be null
-     * @param issueRecorder  the recorder for tracking and recording issues during the processing of the request, must
+     * @param logger  the recorder for tracking and recording issues during the processing of the request, must
      *                       not be null
      */
-    public AbstractKeelWebResponder(RoutingContext routingContext, SpecificLogger<ReceptionistSpecificLog> issueRecorder) {
+    public AbstractKeelWebResponder(RoutingContext routingContext, SpecificLogger<ReceptionistSpecificLog> logger) {
         this.routingContext = routingContext;
-        this.issueRecorder = issueRecorder;
+        this.logger = logger;
     }
 
     /**
@@ -50,8 +50,8 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      * @return an instance of {@link SpecificLogger} configured for handling {@link ReceptionistSpecificLog},
      *         never null
      */
-    public SpecificLogger<ReceptionistSpecificLog> getIssueRecorder() {
-        return issueRecorder;
+    public SpecificLogger<ReceptionistSpecificLog> getLogger() {
+        return logger;
     }
 
     /**
@@ -63,7 +63,7 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      */
     @Override
     public boolean isVerboseLogging() {
-        LogLevel visibleLevel = getIssueRecorder().visibleLevel();
+        LogLevel visibleLevel = getLogger().visibleLevel();
         return LogLevel.DEBUG.isEnoughSeriousAs(visibleLevel);
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractKeelWebResponder<R> implements KeelWebResponder<R>
      */
     protected void recordResponseVerbosely(Object response) {
         if (isVerboseLogging()) {
-            getIssueRecorder().debug(r -> r.setResponse(response));
+            getLogger().debug(r -> r.setResponse(response));
         }
     }
 
