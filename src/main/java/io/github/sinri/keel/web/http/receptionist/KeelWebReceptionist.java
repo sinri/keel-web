@@ -133,4 +133,10 @@ public abstract class KeelWebReceptionist implements KeelAsyncMixin {
     protected void removeCookie(String name) {
         getRoutingContext().response().removeCookie(name);
     }
+
+    protected @Nullable String readFirstQueryValue(String queryName) {
+        List<String> strings = getRoutingContext().queryParam(queryName);
+        if (strings == null || strings.isEmpty()) return null;
+        return strings.get(0);
+    }
 }

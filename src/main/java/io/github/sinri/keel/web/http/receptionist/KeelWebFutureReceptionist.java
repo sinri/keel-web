@@ -5,6 +5,7 @@ import io.github.sinri.keel.web.http.receptionist.responder.KeelWebResponder;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 指定使用异步逻辑构成主逻辑的请求接待类。
@@ -64,5 +65,5 @@ abstract public class KeelWebFutureReceptionist<R> extends KeelWebReceptionist {
               });
     }
 
-    abstract protected Future<R> handleForFuture();
+    abstract protected Future<@Nullable R> handleForFuture();
 }

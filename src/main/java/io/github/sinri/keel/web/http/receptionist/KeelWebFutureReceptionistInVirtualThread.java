@@ -4,6 +4,7 @@ import io.github.sinri.keel.web.http.receptionist.responder.KeelWebApiError;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 指定使用异步逻辑构成主逻辑的请求接待类，专用于虚拟线程环境下。
@@ -24,12 +25,12 @@ public abstract class KeelWebFutureReceptionistInVirtualThread<R> extends KeelWe
      * @return 接口返回内容，将通过{@link KeelWebFutureReceptionist#getResponder()}输出
      * @throws KeelWebApiError 接口运行过程中的报错，将通过{@link KeelWebFutureReceptionist#getResponder()}输出
      */
-    protected abstract R handleInVirtualThread() throws KeelWebApiError;
+    protected abstract @Nullable R handleInVirtualThread() throws KeelWebApiError;
 
     @Override
-    protected final Future<R> handleForFuture() {
+    protected final Future<@Nullable R> handleForFuture() {
         try {
-            var r = handleInVirtualThread();
+            R r = handleInVirtualThread();
             return Future.succeededFuture(r);
         } catch (KeelWebApiError e) {
             return Future.failedFuture(e);
