@@ -75,8 +75,9 @@ public abstract class KeelWebReceptionist implements KeelAsyncMixin {
         return false;
     }
 
-    abstract protected LoggerFactory getLoggerFactory();
-
+    protected LoggerFactory getLoggerFactory() {
+        return LoggerFactory.getShared();
+    }
 
     public final SpecificLogger<ReceptionistSpecificLog> getLogger() {
         return logger;
