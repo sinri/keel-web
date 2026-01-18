@@ -92,16 +92,14 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
                           });
     }
 
-    abstract protected LoggerFactory getLoggerFactory();
-
     public final SpecificLogger<SocketSpecificLog> getLogger() {
         return lateLogger.get();
     }
 
-
     private SpecificLogger<SocketSpecificLog> buildLogger() {
-        return getLoggerFactory().createLogger(SocketSpecificLog.TopicTcpSocket, () -> new SocketSpecificLog()
-                .classification(List.of("socket_id:" + socketID)));
+        return LoggerFactory.getShared().createLogger(
+                SocketSpecificLog.TopicTcpSocket,
+                () -> new SocketSpecificLog().classification(List.of("socket_id:" + socketID)));
     }
 
     public String getSocketID() {

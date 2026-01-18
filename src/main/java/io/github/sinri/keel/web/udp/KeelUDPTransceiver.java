@@ -31,13 +31,13 @@ public class KeelUDPTransceiver implements Closeable {
     public KeelUDPTransceiver(
             DatagramSocket udpServer,
             int port,
-            String address,
-            LoggerFactory loggerFactory
+            String address
     ) {
         this.port = port;
         this.address = address;
         this.udpServer = udpServer;
-        this.logger = loggerFactory.createLogger(DatagramSpecificLog.TopicUdpDatagram, DatagramSpecificLog::new);
+        this.logger = LoggerFactory.getShared()
+                                   .createLogger(DatagramSpecificLog.TopicUdpDatagram, DatagramSpecificLog::new);
     }
 
     public SpecificLogger<DatagramSpecificLog> getLogger() {

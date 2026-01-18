@@ -107,12 +107,8 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
                         }));
     }
 
-    protected LoggerFactory getLoggerFactory() {
-        return LoggerFactory.getShared();
-    }
-
     protected final Logger buildHttpServerLogger() {
-        return getLoggerFactory().createLogger("KeelHttpServer");
+        return LoggerFactory.getShared().createLogger("KeelHttpServer");
     }
 
     public final Logger getHttpServerLogger() {

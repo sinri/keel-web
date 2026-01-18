@@ -1,7 +1,5 @@
 package io.github.sinri.keel.web.tcp;
 
-import io.github.sinri.keel.logger.api.factory.LoggerFactory;
-import io.github.sinri.keel.logger.api.factory.SilentLoggerFactory;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -28,7 +26,6 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
     };
     private Consumer<Throwable> exceptionHandler = throwable -> {
     };
-    private LoggerFactory loggerFactory = SilentLoggerFactory.getInstance();
 
     public KeelBasicSocketWrapper(NetSocket socket) {
         super(socket);
@@ -36,19 +33,6 @@ public class KeelBasicSocketWrapper extends KeelAbstractSocketWrapper {
 
     public KeelBasicSocketWrapper(NetSocket socket, String socketID) {
         super(socket, socketID);
-    }
-
-    @Override
-    public final LoggerFactory getLoggerFactory() {
-        return loggerFactory;
-    }
-
-    /**
-     * Run before deploying this verticle.
-     */
-    public KeelBasicSocketWrapper setLoggerFactory(LoggerFactory loggerFactory) {
-        this.loggerFactory = loggerFactory;
-        return this;
     }
 
     /**

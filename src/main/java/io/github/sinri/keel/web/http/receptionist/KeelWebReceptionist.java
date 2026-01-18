@@ -29,7 +29,8 @@ public abstract class KeelWebReceptionist implements KeelAsyncMixin {
 
     public KeelWebReceptionist(RoutingContext routingContext) {
         this.routingContext = routingContext;
-        this.logger = getLoggerFactory().createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
+        this.logger = LoggerFactory.getShared()
+                                   .createLogger(ReceptionistSpecificLog.TopicReceptionist, () -> new ReceptionistSpecificLog(readRequestID()));
         if (isVerboseLogging()) {
             this.logger.visibleLevel(LogLevel.DEBUG);
         }
@@ -73,10 +74,6 @@ public abstract class KeelWebReceptionist implements KeelAsyncMixin {
      */
     protected boolean isVerboseLogging() {
         return false;
-    }
-
-    protected LoggerFactory getLoggerFactory() {
-        return LoggerFactory.getShared();
     }
 
     public final SpecificLogger<ReceptionistSpecificLog> getLogger() {
