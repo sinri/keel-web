@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.receptionist;
 
-import io.github.sinri.keel.base.async.KeelAsyncMixin;
+import io.github.sinri.keel.base.async.Keel;
+import io.github.sinri.keel.logger.api.LateObject;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
@@ -23,9 +24,10 @@ import java.util.Objects;
  * @since 5.0.0
  */
 @NullMarked
-public abstract class KeelWebReceptionist implements KeelAsyncMixin {
+public abstract class KeelWebReceptionist {
     private final RoutingContext routingContext;
     private final SpecificLogger<ReceptionistSpecificLog> logger;
+    private final LateObject<Keel> lateKeel = new LateObject<>();
 
     public KeelWebReceptionist(RoutingContext routingContext) {
         this.routingContext = routingContext;
@@ -64,9 +66,19 @@ public abstract class KeelWebReceptionist implements KeelAsyncMixin {
         return routingContext;
     }
 
-    @Override
-    public final Vertx getVertx() {
+    protected final Vertx getVertx() {
         return getRoutingContext().vertx();
+    }
+
+    protected final Keel getKeel() {
+        return lateKeel.ensure(() -> {
+            Vertx vertx = getVertx();
+            if (vertx instanceof Keel keel) {
+                return keel;
+            } else {
+                return Keel.create(vertx);
+            }
+        });
     }
 
     /**

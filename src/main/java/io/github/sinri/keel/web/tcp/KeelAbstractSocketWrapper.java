@@ -44,7 +44,7 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
     @Override
     protected Future<?> startVerticle() {
         lateLogger.set(this.buildLogger());
-        return this.funnel.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+        return this.funnel.deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
                           .compose(deploymentID -> {
                               this.socket
                                       .handler(buffer -> {
@@ -81,7 +81,7 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
                                       })
                                       .closeHandler(close -> {
                                           getLogger().info(r -> r.message("SOCKET CLOSE"));
-                                          this.funnel.undeployMe();
+                                          this.undeployMe();
                                           whenClose();
                                       })
                                       .exceptionHandler(throwable -> {
@@ -90,6 +90,14 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
                                       });
                               return Future.succeededFuture();
                           });
+    }
+
+    @Override
+    protected Future<?> stopVerticle() {
+        return funnel.undeployMe()
+                     .compose(v -> {
+                         return super.stopVerticle();
+                     });
     }
 
     public final SpecificLogger<SocketSpecificLog> getLogger() {

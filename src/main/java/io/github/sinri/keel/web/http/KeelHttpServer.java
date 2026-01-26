@@ -1,5 +1,6 @@
 package io.github.sinri.keel.web.http;
 
+import io.github.sinri.keel.base.async.Keel;
 import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
@@ -7,7 +8,6 @@ import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
@@ -84,10 +84,10 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
     protected Future<Void> startVerticle() {
         this.httpServerLogger = buildHttpServerLogger();
 
-        var server = getVertx().createHttpServer(getHttpServerOptions());
+        var server = getKeel().createHttpServer(getHttpServerOptions());
         this.server = server;
 
-        Router router = Router.router(getVertx());
+        Router router = Router.router(getKeel());
         this.configureRoutes(router);
 
         return beforeStartServer()
@@ -139,11 +139,11 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
      * @return a {@link Future} that completes with the deployment ID if the deployment is successful,
      *         or fails with an exception if the deployment fails.
      */
-    public Future<String> deployMe(Vertx vertx) {
+    public Future<String> deployMe(Keel keel) {
         DeploymentOptions deploymentOptions = new DeploymentOptions();
         if (ReflectionUtils.isVirtualThreadsAvailable()) {
             deploymentOptions.setThreadingModel(ThreadingModel.VIRTUAL_THREAD);
         }
-        return super.deployMe(vertx, deploymentOptions);
+        return super.deployMe(keel, deploymentOptions);
     }
 }
