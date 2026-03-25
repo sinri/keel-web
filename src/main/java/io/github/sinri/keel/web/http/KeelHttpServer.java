@@ -122,7 +122,12 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
                      .compose(v -> {
                          getHttpServerLogger().info(r -> r.message("HTTP Server Closed"));
                          return afterShutdownServer()
-                                 .eventually(Future::succeededFuture);
+                                 .recover(throwable2 -> {
+                                     getHttpServerLogger().error(r -> r
+                                             .message("afterShutdownServer failed: %s".formatted(throwable2.getMessage()))
+                                             .exception(throwable2));
+                                     return Future.succeededFuture();
+                                 });
                      }, throwable -> {
                          getHttpServerLogger().error(r -> r
                                  .message("HTTP Server Closing Failure: %s".formatted(throwable.getMessage()))

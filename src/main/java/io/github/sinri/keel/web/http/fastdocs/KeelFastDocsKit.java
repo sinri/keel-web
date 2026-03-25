@@ -148,29 +148,31 @@ public class KeelFastDocsKit {
 
                     return Future.succeededFuture(new MarkdownPageBuilder(options));
                 })
-                .onFailure(throwable -> {
-                    options.ctx.response().setStatusCode(404).end();
-                })
                 .compose(MarkdownPageBuilder::respond)
-                .compose(v -> {
-                    return Future.succeededFuture();
+                .onFailure(throwable -> {
+                    if (!options.ctx.response().ended()) {
+                        options.ctx.response().setStatusCode(404).end();
+                    }
                 });
-
     }
 
     protected void processRequestWithCatalogue(PageBuilderOptions options) {
         options.fromDoc = options.ctx.request().getParam("from_doc");
         new CataloguePageBuilder(options).respond()
-                                         .compose(v -> {
-                                             return Future.succeededFuture();
-                                         });
+                .onFailure(throwable -> {
+                    if (!options.ctx.response().ended()) {
+                        options.ctx.response().setStatusCode(500).end();
+                    }
+                });
     }
 
     protected void processRequestWithMarkdownCSS(PageBuilderOptions options) {
         new MarkdownCssBuilder(options).respond()
-                                       .compose(v -> {
-                                           return Future.succeededFuture();
-                                       });
+                .onFailure(throwable -> {
+                    if (!options.ctx.response().ended()) {
+                        options.ctx.response().setStatusCode(500).end();
+                    }
+                });
     }
 
     protected void processRequestWithStaticPath(PageBuilderOptions options) {

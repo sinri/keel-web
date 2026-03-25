@@ -34,6 +34,8 @@ public abstract class KeelWebFutureReceptionistInVirtualThread<R> extends KeelWe
             return Future.succeededFuture(r);
         } catch (KeelWebApiError e) {
             return Future.failedFuture(e);
+        } catch (Exception e) {
+            return Future.failedFuture(e);
         }
     }
 }
