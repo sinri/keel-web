@@ -1,7 +1,13 @@
 package io.github.sinri.keel.web.http.fastdocs.page;
 
+import io.github.sinri.keel.core.utils.StringUtils;
+
 /**
  * Utility for escaping strings before insertion into HTML to prevent XSS.
+ * <p>
+ * Note: {@code StringUtils.escapeForHttpEntity()} from keel-core is not sufficient here
+ * because it does not escape {@code "} and {@code '}, which are critical for preventing
+ * attribute injection in HTML (e.g. {@code href='...'}).
  *
  * @since 5.0.1
  */
@@ -11,6 +17,7 @@ final class HtmlEscaper {
 
     /**
      * Escapes HTML special characters: {@code & < > " '}.
+     * todo: it might be replaced by {@link StringUtils#escapeForHttpEntity(String)} when keel-core is upgraded to 5.0.2.
      */
     static String escape(String input) {
         if (input == null || input.isEmpty()) return "";
