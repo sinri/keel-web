@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.jreleaser") version "1.22.0"
+    id("org.jreleaser") version "1.23.0"
 }
 
 // Project metadata from gradle.properties
