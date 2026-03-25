@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -116,7 +117,15 @@ public class KeelFastDocsKit {
             return Future.failedFuture("Not match url root");
         }
         var raw = requestPath.substring(this.rootURLPath.length());
-        return Future.succeededFuture(URLDecoder.decode(raw, StandardCharsets.UTF_8));
+        var decoded = URLDecoder.decode(raw, StandardCharsets.UTF_8);
+
+        // Prevent path traversal: normalize and verify the path stays within the root
+        Path normalized = Path.of(decoded).normalize();
+        if (normalized.startsWith("..") || normalized.isAbsolute()) {
+            return Future.failedFuture("Invalid path: traversal detected");
+        }
+
+        return Future.succeededFuture(normalized.toString());
     }
 
     protected void processRequestWithMarkdownPath(PageBuilderOptions options) {

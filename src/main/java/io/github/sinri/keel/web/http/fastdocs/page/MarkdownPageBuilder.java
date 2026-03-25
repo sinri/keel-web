@@ -23,14 +23,14 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
     }
 
     protected String getPageTitle() {
-        return options.subjectOfDocuments
+        return HtmlEscaper.escape(options.subjectOfDocuments
                 + " - "
                 + URLDecoder.decode(options.ctx.request().path()
-                                               .substring(this.options.rootURLPath.length()), StandardCharsets.UTF_8);
+                                               .substring(this.options.rootURLPath.length()), StandardCharsets.UTF_8));
     }
 
     protected String getLogoDivContent() {
-        return options.subjectOfDocuments;
+        return HtmlEscaper.escape(options.subjectOfDocuments);
     }
 
     protected String getComputedBreadcrumbDivContent() {
@@ -40,19 +40,19 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
         ).split("/");
         List<String> x = new ArrayList<>();
         StringBuilder href = new StringBuilder(this.options.rootURLPath);
-        x.add("<a href='" + href + "index.md" + "'>" + options.subjectOfDocuments + "</a>");
+        x.add("<a href='" + HtmlEscaper.escape(href + "index.md") + "'>" + HtmlEscaper.escape(options.subjectOfDocuments) + "</a>");
         for (var component : components) {
             if (!href.toString().endsWith("/")) {
                 href.append("/");
             }
             href.append(component);
-            x.add("<a href='" + href + (component.endsWith(".md") ? "" : "/index.md") + "'>" + component + "</a>");
+            x.add("<a href='" + HtmlEscaper.escape(href + (component.endsWith(".md") ? "" : "/index.md")) + "'>" + HtmlEscaper.escape(component) + "</a>");
         }
         return String.join("&nbsp;‣&nbsp;", x);
     }
 
     protected String getFooterDivContent() {
-        return options.footerText + " <div style=\"display: inline-block;color: gray;\">|</div> Powered by FastDocs";
+        return HtmlEscaper.escape(options.footerText) + " <div style=\"display: inline-block;color: gray;\">|</div> Powered by FastDocs";
     }
 
     private String getCatalogueLink(String fromDoc) {

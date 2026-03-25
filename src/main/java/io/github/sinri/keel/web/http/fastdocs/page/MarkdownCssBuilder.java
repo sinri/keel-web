@@ -12,7 +12,7 @@ import java.util.Objects;
  */
 public class MarkdownCssBuilder implements FastDocsContentResponder {
 
-    private static String cssFileContent = null;
+    private static volatile String cssFileContent = null;
     private final PageBuilderOptions options;
 
     public MarkdownCssBuilder(PageBuilderOptions options) {

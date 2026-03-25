@@ -175,12 +175,16 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
 
 
     public String getRemoteAddressString() {
-        return this.socket.remoteAddress().host() + ":" + this.socket.remoteAddress().port();
+        SocketAddress addr = this.socket.remoteAddress();
+        if (addr == null) return "unknown";
+        return addr.host() + ":" + addr.port();
     }
 
 
     public String getLocalAddressString() {
-        return this.socket.localAddress().host() + ":" + this.socket.localAddress().port();
+        SocketAddress addr = this.socket.localAddress();
+        if (addr == null) return "unknown";
+        return addr.host() + ":" + addr.port();
     }
 
 
