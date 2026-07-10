@@ -23,6 +23,8 @@ public class KeelUDPTransceiver implements Closeable {
     private final int port;
     private final DatagramSocket udpServer;
     private final SpecificLogger<DatagramSpecificLog> logger;
+    private boolean debugPayloadLoggingEnabled;
+    private int debugPayloadMaxBytes = 256;
     private String address = "0.0.0.0";
     private BiConsumer<SocketAddress, Buffer> datagramSocketConsumer = (sender, buffer) -> {
         // do nothing
@@ -58,8 +60,12 @@ public class KeelUDPTransceiver implements Closeable {
                                               Buffer data = datagramPacket.data();
 
                                               getLogger().info(r -> r
-                                                      .bufferReceived(data, sender.hostAddress(), sender.port())
+                                                      .bufferReceivedSummary(data, sender.hostAddress(), sender.port())
                                               );
+                                              if (debugPayloadLoggingEnabled) {
+                                                  getLogger().debug(r -> r.bufferReceivedPayload(
+                                                          data, sender.hostAddress(), sender.port(), debugPayloadMaxBytes));
+                                              }
                                               this.datagramSocketConsumer.accept(sender, data);
                                           })
                                           //.endHandler(end -> getIssueRecorder().info(r -> r.message("read end")))
@@ -71,7 +77,13 @@ public class KeelUDPTransceiver implements Closeable {
 
     public Future<Void> send(Buffer buffer, int targetPort, String targetAddress) {
         return udpServer.send(buffer, targetPort, targetAddress)
-                        .onSuccess(done -> getLogger().info(r -> r.bufferSent(buffer, targetAddress, targetPort)))
+                        .onSuccess(done -> {
+                            getLogger().info(r -> r.bufferSentSummary(buffer, targetAddress, targetPort));
+                            if (debugPayloadLoggingEnabled) {
+                                getLogger().debug(r -> r.bufferSentPayload(
+                                        buffer, targetAddress, targetPort, debugPayloadMaxBytes));
+                            }
+                        })
                         .onFailure(throwable -> getLogger().error(x -> x.exception(throwable)
                                                                         .message("failed to send to " + targetAddress + ":" + targetPort)));
     }
@@ -81,6 +93,31 @@ public class KeelUDPTransceiver implements Closeable {
                         .onSuccess(v -> getLogger().info(r -> r.message("closed")))
                         .onFailure(throwable -> getLogger().error(x -> x.exception(throwable)
                                                                         .message("failed to close")));
+    }
+
+    /**
+     * Enables or disables payload logging at DEBUG level. Payload logging is disabled by default.
+     *
+     * @param enabled whether payload logging is enabled
+     * @return this transceiver
+     */
+    public KeelUDPTransceiver setDebugPayloadLoggingEnabled(boolean enabled) {
+        this.debugPayloadLoggingEnabled = enabled;
+        return this;
+    }
+
+    /**
+     * Sets the maximum number of payload bytes captured in each DEBUG log entry.
+     *
+     * @param maxBytes positive maximum payload size
+     * @return this transceiver
+     */
+    public KeelUDPTransceiver setDebugPayloadMaxBytes(int maxBytes) {
+        if (maxBytes <= 0) {
+            throw new IllegalArgumentException("maxBytes must be positive");
+        }
+        this.debugPayloadMaxBytes = maxBytes;
+        return this;
     }
 
     @Override
