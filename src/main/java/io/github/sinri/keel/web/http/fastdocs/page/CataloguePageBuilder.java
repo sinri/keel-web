@@ -33,10 +33,21 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
     private final String actualFileRootOutsideJAR;
     private final @Nullable String catalogueDivContent;
 
+    /**
+     * Creates a catalogue page builder that generates its catalogue body on demand.
+     *
+     * @param options page options for the current request
+     */
     public CataloguePageBuilder(PageBuilderOptions options) {
         this(options, null);
     }
 
+    /**
+     * Creates a catalogue page builder with optional pre-rendered catalogue content.
+     *
+     * @param options page options for the current request
+     * @param catalogueDivContent pre-rendered catalogue body, or {@code null} to build it
+     */
     public CataloguePageBuilder(PageBuilderOptions options, @Nullable String catalogueDivContent) {
         this.options = options;
         this.catalogueDivContent = catalogueDivContent;
@@ -178,10 +189,21 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         return buildCatalogueDivContent(buildCatalogueTree());
     }
 
+    /**
+     * Renders a previously built document tree as catalogue HTML.
+     *
+     * @param tree immutable document tree to render
+     * @return rendered catalogue HTML
+     */
     public String buildCatalogueDivContent(TreeNode tree) {
         return createHTMLCodeForDir(tree).toString();
     }
 
+    /**
+     * Reads the configured Markdown root and builds its immutable document tree.
+     *
+     * @return immutable document tree
+     */
     public TreeNode buildCatalogueTree() {
         return embedded ? buildTreeInsideJAR() : buildTreeOutsideJAR();
     }
@@ -339,6 +361,14 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         return new TreeNode(href, item.getName(), level, children);
     }
 
+    /**
+     * Immutable node in a FastDocs catalogue tree.
+     *
+     * @param href URL of the represented Markdown file or directory index
+     * @param name display name of the node
+     * @param level nesting level in the catalogue
+     * @param children child nodes; copied, sorted by name, and made unmodifiable
+     */
     public record TreeNode(String href, String name, int level, List<TreeNode> children)
             implements JsonObjectConvertible {
         public TreeNode {
@@ -347,6 +377,11 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
                                .toList();
         }
 
+        /**
+         * Converts this node and all descendants to JSON.
+         *
+         * @return recursive JSON representation of this node
+         */
         public JsonObject toJsonObject() {
             var x = new JsonObject()
                     .put("href", href)

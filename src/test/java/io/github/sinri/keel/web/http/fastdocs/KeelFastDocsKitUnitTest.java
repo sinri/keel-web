@@ -18,9 +18,16 @@ import java.util.concurrent.Executors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeelFastDocsKitUnitTest {
+    @Test
+    void constructorShouldRejectAnEmptyMarkdownRoot() {
+        assertThrows(IllegalArgumentException.class, () -> new KeelFastDocsKit("/docs/", ""));
+        assertThrows(IllegalArgumentException.class, () -> new KeelFastDocsKit("/docs/", "///"));
+    }
+
     @Test
     void installToRouterShouldNormalizePathsAndInstallIndependentSites() throws Exception {
         Vertx vertx = Vertx.vertx();
@@ -36,6 +43,14 @@ class KeelFastDocsKitUnitTest {
 
             HttpResponse<Buffer> alpha = await(client.get(server.actualPort(), "localhost", "/alpha/catalogue").send());
             HttpResponse<Buffer> beta = await(client.get(server.actualPort(), "localhost", "/beta/catalogue").send());
+            HttpResponse<Buffer> alphaIndex = await(client.get(
+                    server.actualPort(), "localhost", "/alpha/index.md").send());
+            HttpResponse<Buffer> alphaAsset = await(client.get(
+                    server.actualPort(), "localhost", "/alpha/assets/example.svg").send());
+            HttpResponse<Buffer> assetFromWrongSite = await(client.get(
+                    server.actualPort(), "localhost", "/beta/assets/example.svg").send());
+            HttpResponse<Buffer> missingAsset = await(client.get(
+                    server.actualPort(), "localhost", "/alpha/assets/missing.svg").send());
             HttpResponse<Buffer> nonGet = await(client.request(
                     HttpMethod.POST, server.actualPort(), "localhost", "/alpha/catalogue").send());
 
@@ -47,6 +62,13 @@ class KeelFastDocsKitUnitTest {
             assertTrue(beta.bodyAsString().contains("Beta Docs"));
             assertTrue(beta.bodyAsString().contains("/beta/beta-page.md"));
             assertFalse(beta.bodyAsString().contains("/alpha/alpha-page.md"));
+            assertEquals(200, alphaIndex.statusCode());
+            assertTrue(alphaIndex.bodyAsString().contains("src=\"assets/example.svg\""));
+            assertEquals(200, alphaAsset.statusCode());
+            assertEquals("image/svg+xml", alphaAsset.getHeader("Content-Type"));
+            assertTrue(alphaAsset.bodyAsString().contains("fastdocs-test-asset"));
+            assertEquals(404, assetFromWrongSite.statusCode());
+            assertEquals(404, missingAsset.statusCode());
             assertEquals(405, nonGet.statusCode());
         } finally {
             client.close();
