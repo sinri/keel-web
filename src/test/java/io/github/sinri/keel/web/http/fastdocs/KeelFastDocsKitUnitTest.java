@@ -51,6 +51,10 @@ class KeelFastDocsKitUnitTest {
                     server.actualPort(), "localhost", "/beta/assets/example.svg").send());
             HttpResponse<Buffer> missingAsset = await(client.get(
                     server.actualPort(), "localhost", "/alpha/assets/missing.svg").send());
+            HttpResponse<Buffer> traversal = await(client.get(
+                    server.actualPort(), "localhost", "/alpha/../beta/index.md").send());
+            HttpResponse<Buffer> encodedTraversal = await(client.get(
+                    server.actualPort(), "localhost", "/alpha/%2e%2e/beta/index.md").send());
             HttpResponse<Buffer> nonGet = await(client.request(
                     HttpMethod.POST, server.actualPort(), "localhost", "/alpha/catalogue").send());
 
@@ -69,6 +73,8 @@ class KeelFastDocsKitUnitTest {
             assertTrue(alphaAsset.bodyAsString().contains("fastdocs-test-asset"));
             assertEquals(404, assetFromWrongSite.statusCode());
             assertEquals(404, missingAsset.statusCode());
+            assertEquals(404, traversal.statusCode());
+            assertEquals(404, encodedTraversal.statusCode());
             assertEquals(405, nonGet.statusCode());
         } finally {
             client.close();
