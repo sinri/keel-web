@@ -1,5 +1,13 @@
 package io.github.sinri.keel.web.http.fastdocs;
 
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServer;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -7,11 +15,48 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class KeelFastDocsKitUnitTest {
+    @Test
+    void installToRouterShouldNormalizePathsAndInstallIndependentSites() throws Exception {
+        Vertx vertx = Vertx.vertx();
+        HttpServer server = null;
+        WebClient client = WebClient.create(vertx);
+        try {
+            Router router = Router.router(vertx);
+            KeelFastDocsKit.installToRouter(
+                    router, "/alpha", "fastdocs-test/alpha", "Alpha Docs", "Alpha Footer");
+            KeelFastDocsKit.installToRouter(
+                    router, "/beta", "fastdocs-test/beta", "Beta Docs", "Beta Footer");
+            server = await(vertx.createHttpServer().requestHandler(router).listen(0));
+
+            HttpResponse<Buffer> alpha = await(client.get(server.actualPort(), "localhost", "/alpha/catalogue").send());
+            HttpResponse<Buffer> beta = await(client.get(server.actualPort(), "localhost", "/beta/catalogue").send());
+            HttpResponse<Buffer> nonGet = await(client.request(
+                    HttpMethod.POST, server.actualPort(), "localhost", "/alpha/catalogue").send());
+
+            assertEquals(200, alpha.statusCode());
+            assertTrue(alpha.bodyAsString().contains("Alpha Docs"));
+            assertTrue(alpha.bodyAsString().contains("/alpha/alpha-page.md"));
+            assertFalse(alpha.bodyAsString().contains("/beta/beta-page.md"));
+            assertEquals(200, beta.statusCode());
+            assertTrue(beta.bodyAsString().contains("Beta Docs"));
+            assertTrue(beta.bodyAsString().contains("/beta/beta-page.md"));
+            assertFalse(beta.bodyAsString().contains("/alpha/alpha-page.md"));
+            assertEquals(405, nonGet.statusCode());
+        } finally {
+            client.close();
+            if (server != null) {
+                await(server.close());
+            }
+            await(vertx.close());
+        }
+    }
+
     @Test
     void catalogueCacheShouldBeIsolatedByKitInstance() {
         KeelFastDocsKit alphaKit = new KeelFastDocsKit("/alpha/", "fastdocs-test/alpha/");
@@ -89,5 +134,9 @@ class KeelFastDocsKitUnitTest {
         options.subjectOfDocuments = subject;
         options.fromDoc = fromDoc;
         return options;
+    }
+
+    private static <T> T await(Future<T> future) throws Exception {
+        return future.toCompletionStage().toCompletableFuture().get();
     }
 }
