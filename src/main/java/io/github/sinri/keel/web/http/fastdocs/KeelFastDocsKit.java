@@ -9,6 +9,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +28,13 @@ public class KeelFastDocsKit {
     private final StaticHandler staticHandler;
     private final String rootURLPath;
     private final String rootMarkdownFilePath;
+    private final Object catalogueCacheLock = new Object();
 
     private String documentSubject = "FastDocs";
     private String footerText = "Public Domain";
+    private volatile CataloguePageBuilder.@Nullable TreeNode catalogueTreeCache;
+    private volatile @Nullable String standaloneCatalogueDivContentCache;
+    private volatile @Nullable String inDocumentCatalogueDivContentCache;
 
     /**
      * @param rootURLPath          such as `/prefix/`
@@ -158,12 +163,44 @@ public class KeelFastDocsKit {
 
     protected void processRequestWithCatalogue(PageBuilderOptions options) {
         options.fromDoc = options.ctx.request().getParam("from_doc");
-        new CataloguePageBuilder(options).respond()
+        String catalogueDivContent = getCatalogueDivContent(options);
+        new CataloguePageBuilder(options, catalogueDivContent).respond()
                 .onFailure(throwable -> {
                     if (!options.ctx.response().ended()) {
                         options.ctx.response().setStatusCode(500).end();
                     }
                 });
+    }
+
+    String getCatalogueDivContent(PageBuilderOptions options) {
+        boolean embeddedInDocument = options.fromDoc != null && !options.fromDoc.isEmpty();
+        String cached = embeddedInDocument
+                ? inDocumentCatalogueDivContentCache
+                : standaloneCatalogueDivContentCache;
+        if (cached != null) {
+            return cached;
+        }
+
+        synchronized (catalogueCacheLock) {
+            cached = embeddedInDocument
+                    ? inDocumentCatalogueDivContentCache
+                    : standaloneCatalogueDivContentCache;
+            if (cached == null) {
+                CataloguePageBuilder builder = new CataloguePageBuilder(options);
+                CataloguePageBuilder.@Nullable TreeNode tree = catalogueTreeCache;
+                if (tree == null) {
+                    tree = builder.buildCatalogueTree();
+                    catalogueTreeCache = tree;
+                }
+                cached = builder.buildCatalogueDivContent(tree);
+                if (embeddedInDocument) {
+                    inDocumentCatalogueDivContentCache = cached;
+                } else {
+                    standaloneCatalogueDivContentCache = cached;
+                }
+            }
+            return cached;
+        }
     }
 
     protected void processRequestWithMarkdownCSS(PageBuilderOptions options) {
