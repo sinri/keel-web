@@ -20,4 +20,5 @@ module io.github.sinri.keel.web {
     exports io.github.sinri.keel.web.http.requester.extractor;
     exports io.github.sinri.keel.web.tcp;
     exports io.github.sinri.keel.web.udp;
+    exports io.github.sinri.keel.web.http.receptionist.sse;
 }
