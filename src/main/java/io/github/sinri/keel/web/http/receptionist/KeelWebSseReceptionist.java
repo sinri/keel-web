@@ -1,15 +1,17 @@
 package io.github.sinri.keel.web.http.receptionist;
 
 import io.github.sinri.keel.web.http.receptionist.sse.ServerSentEvent;
-import io.github.sinri.keel.web.http.receptionist.sse.KeelWebSseStream;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
+import io.vertx.core.http.HttpVersion;
 import io.vertx.ext.web.RoutingContext;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * SSE receptionist. Declare timeout=0 on ApiMeta for long-lived routes.
- * The stream owns the response; subclasses must not write to it directly.
+ * Lightweight base for SSE endpoints. Subclasses implement {@link #handle()} and own
+ * the response lifecycle: validation, headers, ordered writes, end/reset and upstream cleanup.
+ * Declare {@code timeout=0} on {@link ApiMeta} for long-lived routes.
+ * No automatic error event, heartbeat, timeout or disconnect handler is installed.
+ *
  * @since 5.0.4
  */
 @NullMarked
@@ -18,71 +20,33 @@ public abstract class KeelWebSseReceptionist extends KeelWebReceptionist {
         super(context);
     }
 
-    /** Prepares the request before streaming. The business controls timeouts and cancellation. */
-    protected Future<Void> prepare() {
-        return Future.succeededFuture();
+    /**
+     * Configures SSE headers and HTTP/1.1 chunking before the first write.
+     * This does not send or end the response. HTTP/2 framing is handled by Vert.x.
+     *
+     * @param routingContext request whose response will carry SSE output
+     */
+    public static void setHeadersForSSE(RoutingContext routingContext) {
+        routingContext.response().putHeader("Content-Type", "text/event-stream; charset=utf-8")
+                      .putHeader("Cache-Control", "no-cache, no-transform")
+                      .putHeader("X-Accel-Buffering", "no");
+        if (routingContext.request().version() == HttpVersion.HTTP_1_1) {
+            routingContext.response().setChunked(true);
+        }
     }
 
     /**
-     * Completes when production ends. Register cancellation through stream.completion().
+     * Encodes and writes one event or comment. Chain calls with {@link Future#compose}
+     * to order output, then explicitly end the response when production finishes.
+     * Configure headers with {@link #setHeadersForSSE(RoutingContext)} first.
+     *
+     * @param event event to encode; must not be modified concurrently with this call
+     * @return a Future tracking the write, including encoding and synchronous write failures;
+     *         success is not client acknowledgement and adds no drain waiting
+     * @implNote Failure does not automatically end/reset the response or cancel the producer.
      */
-    protected abstract Future<Void> handleStream(KeelWebSseStream stream);
-
-    @Override
-    public final void handle() {
-        Future.succeededFuture()
-              .compose(v -> prepare())
-              .compose(v -> respondWithStream())
-              .onFailure(error -> {
-                  var response = getRoutingContext().response();
-                  if (!response.closed() && !response.ended()) {
-                      if (response.headWritten()) {
-                          response.reset().onFailure(resetError -> getLogger().error(log -> log
-                                  .message("SSE reset failed").exception(resetError)));
-                      } else {
-                          getRoutingContext().fail(error);
-                      }
-                  }
-              });
-    }
-
-    private Future<Void> sendResponseHeaders() {
-        KeelWebSseStream.setHeaders(getRoutingContext());
-        return Future.succeededFuture();
-    }
-
-    private Future<Void> respondWithStream() {
-        var response = getRoutingContext().response();
-        if (response.closed() || response.ended()) return Future.succeededFuture();
-
+    protected Future<Void> pushOneEvent(ServerSentEvent event) {
         return Future.succeededFuture()
-                .compose(v -> sendResponseHeaders())
-                .compose(v -> {
-                    var stream = KeelWebSseStream.createDefaultInstance(response);
-                    return Future.succeededFuture()
-                            .compose(ignored -> handleStream(stream))
-                            .recover(error -> {
-                                // Failed writes already terminate the stream; do not send another event.
-                                if (stream.completion().failed()) return Future.failedFuture(error);
-                                return sendStreamError(stream, error);
-                            })
-                            .eventually(stream::end)
-                            .recover(error -> {
-                                if (!stream.completion().failed()) return Future.failedFuture(error);
-                                getLogger().error(log -> log.message("SSE transport failed").exception(error));
-                                return Future.succeededFuture();
-                            });
-                });
-    }
-
-    private Future<Void> sendStreamError(KeelWebSseStream stream, Throwable error) {
-        getLogger().error(log -> log.message("SSE production failed").exception(error));
-        return stream.sendEvent(new ServerSentEvent()
-                .event("error")
-                .data(new JsonObject()
-                        .put("code", "FAILED")
-                        .put("message", "Stream failed")
-                        .put("request_id", readRequestID())
-                        .encode()));
+                .compose(v -> getRoutingContext().response().write(event.encode()));
     }
 }
