@@ -5,6 +5,8 @@ import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.core.utils.ReflectionUtils;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.logger.Logger;
+import io.github.sinri.keel.web.http.receptionist.KeelWebReceptionist;
+import io.github.sinri.keel.web.http.receptionist.KeelWebReceptionistLoader;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
@@ -53,6 +55,24 @@ abstract public class KeelHttpServer extends KeelVerticleBase {
     }
 
     protected abstract void configureRoutes(Router router);
+
+    /**
+     * @since 5.0.4
+     */
+    protected <R extends KeelWebReceptionist> void loadPackageToRouter(
+            Router router,
+            String packageName,
+            Class<R> classOfReceptionist
+    ) {
+        KeelWebReceptionistLoader.loadPackage(router, packageName, classOfReceptionist, getHttpServerLogger());
+    }
+
+    /**
+     * @since 5.0.4
+     */
+    protected <R extends KeelWebReceptionist> void loadClassToRouter(Router router, Class<? extends R> c) {
+        KeelWebReceptionistLoader.loadClass(router, c, getHttpServerLogger());
+    }
 
     /**
      * Executes tasks or setup logic that needs to be completed before the HTTP server starts.
