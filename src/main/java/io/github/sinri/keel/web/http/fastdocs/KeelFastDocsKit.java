@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.fastdocs;
 
 import io.github.sinri.keel.web.http.fastdocs.page.CataloguePageBuilder;
+import io.github.sinri.keel.web.http.fastdocs.page.FastDocsPathCodec;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownCssBuilder;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownPageBuilder;
 import io.vertx.core.Future;
@@ -13,7 +14,6 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -169,16 +169,19 @@ public class KeelFastDocsKit {
         if (!requestPath.startsWith(this.rootURLPath)) {
             return Future.failedFuture("Not match url root");
         }
-        var raw = requestPath.substring(this.rootURLPath.length());
-        var decoded = URLDecoder.decode(raw, StandardCharsets.UTF_8);
+        try {
+            var raw = requestPath.substring(this.rootURLPath.length());
+            var decoded = FastDocsPathCodec.decodePath(raw);
 
-        // Prevent path traversal: normalize and verify the path stays within the root
-        Path normalized = Path.of(decoded).normalize();
-        if (normalized.startsWith("..") || normalized.isAbsolute()) {
-            return Future.failedFuture("Invalid path: traversal detected");
+            // Validate after decoding so encoded traversal cannot escape the resource root.
+            Path normalized = Path.of(decoded).normalize();
+            if (normalized.startsWith("..") || normalized.isAbsolute()) {
+                return Future.failedFuture("Invalid path: traversal detected");
+            }
+            return Future.succeededFuture(normalized.toString());
+        } catch (IllegalArgumentException e) {
+            return Future.failedFuture(e);
         }
-
-        return Future.succeededFuture(normalized.toString());
     }
 
     protected void processRequestWithMarkdownPath(PageBuilderOptions options) {

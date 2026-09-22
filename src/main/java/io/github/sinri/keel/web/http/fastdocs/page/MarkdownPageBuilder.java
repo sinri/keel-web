@@ -5,7 +5,7 @@ import io.github.sinri.keel.web.http.fastdocs.PageBuilderOptions;
 import io.vertx.core.Future;
 import io.vertx.ext.web.RoutingContext;
 
-import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,8 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
     protected String getPageTitle() {
         return HtmlEscaper.escape(options.subjectOfDocuments
                 + " - "
-                + URLDecoder.decode(options.ctx.request().path()
-                                               .substring(this.options.rootURLPath.length()), StandardCharsets.UTF_8));
+                + FastDocsPathCodec.decodePath(options.ctx.request().path()
+                                               .substring(this.options.rootURLPath.length())));
     }
 
     protected String getLogoDivContent() {
@@ -34,9 +34,8 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
     }
 
     protected String getComputedBreadcrumbDivContent() {
-        String[] components = URLDecoder.decode(
-                options.ctx.request().path().substring(this.options.rootURLPath.length()),
-                StandardCharsets.UTF_8
+        String[] components = FastDocsPathCodec.decodePath(
+                options.ctx.request().path().substring(this.options.rootURLPath.length())
         ).split("/");
         List<String> x = new ArrayList<>();
         StringBuilder href = new StringBuilder(this.options.rootURLPath);
@@ -45,7 +44,7 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
             if (!href.toString().endsWith("/")) {
                 href.append("/");
             }
-            href.append(component);
+            href.append(FastDocsPathCodec.encodePath(component));
             x.add("<a href='" + HtmlEscaper.escape(href + (component.endsWith(".md") ? "" : "/index.md")) + "'>" + HtmlEscaper.escape(component) + "</a>");
         }
         return String.join("&nbsp;‣&nbsp;", x);
@@ -58,7 +57,7 @@ public class MarkdownPageBuilder implements FastDocsContentResponder {
     private String getCatalogueLink(String fromDoc) {
         return this.options.rootURLPath + "catalogue" + (
                 (fromDoc != null && !fromDoc.isEmpty())
-                        ? ("?from_doc=" + fromDoc)
+                        ? ("?from_doc=" + URLEncoder.encode(fromDoc, StandardCharsets.UTF_8))
                         : ""
         );
     }

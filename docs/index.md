@@ -32,6 +32,7 @@ dependencies {
 ## 文档导航
 
 - [5.0.4 响应器失败响应变更](./5.0.4/responder.md)
+- [5.0.4 FastDocs 路径处理修复](./5.0.4/fastdocs.md)
 - [HTTP 服务](./5.0.3/http-server.md)
 - [请求接待与请求体](./5.0.3/receptionist.md)
 - [预处理器链](./5.0.3/prehandler.md)

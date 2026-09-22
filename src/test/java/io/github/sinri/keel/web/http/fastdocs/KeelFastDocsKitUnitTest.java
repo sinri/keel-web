@@ -150,6 +150,58 @@ class KeelFastDocsKitUnitTest {
         }
     }
 
+    @Test
+    void specialPathsAndGeneratedLinksShouldResolveToTheCorrectDocument() throws Exception {
+        Vertx vertx = Vertx.vertx();
+        HttpServer server = null;
+        WebClient client = WebClient.create(vertx);
+        try {
+            Router router = Router.router(vertx);
+            KeelFastDocsKit.installToRouter(router, "/docs/", "fastdocs-test/paths", "Path Docs", "Footer");
+            server = await(vertx.createHttpServer().requestHandler(router).listen(0));
+            int port = server.actualPort();
+            var catalogue = await(client.get(port, "localhost", "/docs/catalogue").send());
+            assertEquals(200, catalogue.statusCode());
+            String[][] cases = {
+                    {"C%2B%2B.md", "C++.md"},
+                    {"C%20%20.md", "C  .md"},
+                    {"%E4%B8%AD%E6%96%87.md", "中文.md"},
+                    {"100%25.md", "100%.md"},
+                    {"a%23b%3F.md", "a#b?.md"},
+                    {"%252e%252e.md", "%2e%2e.md"},
+                    {"sub%20%2B%E4%B8%AD%E6%96%87/C%2B%2B.md", "sub +中文/C++.md"}
+            };
+            for (String[] entry : cases) {
+                String href = "/docs/" + entry[0];
+                // Follow the exact href emitted by the catalogue, including its percent escapes.
+                assertTrue(catalogue.bodyAsString().contains("href='" + href + "'"), href);
+                var response = await(client.get(port, "localhost", href).send());
+                assertEquals(200, response.statusCode(), href);
+                assertTrue(response.bodyAsString().contains("file-marker: " + entry[1]), href);
+                assertTrue(response.bodyAsString().contains("<title>Path Docs - " + entry[1] + "</title>"), href);
+                assertTrue(response.bodyAsString().contains("href='" + href + "'"), href);
+            }
+            var literalPlus = await(client.get(port, "localhost", "/docs/C++.md").send());
+            assertEquals(200, literalPlus.statusCode());
+            assertTrue(literalPlus.bodyAsString().contains("file-marker: C++.md"));
+            assertFalse(literalPlus.bodyAsString().contains("file-marker: C  .md"));
+            assertTrue(literalPlus.bodyAsString().contains("?from_doc=C%2B%2B.md"));
+            var nested = await(client.get(port, "localhost", "/docs/" + cases[6][0]).send());
+            assertTrue(nested.bodyAsString().contains("href='/docs/sub%20%2B%E4%B8%AD%E6%96%87/index.md'"));
+            for (String path : List.of("%2e%2e/alpha/index.md", "%2e%2e%2falpha/index.md", "%2Fetc/index.md", "bad%GG.md")) {
+                var response = await(client.get(port, "localhost", "/docs/" + path).send());
+                assertTrue(response.statusCode() >= 400 && response.statusCode() < 500, path);
+                String body = java.util.Objects.requireNonNullElse(response.bodyAsString(), "");
+                assertFalse(body.contains("assets/example.svg"), path);
+                assertFalse(body.contains("file-marker:"), path);
+            }
+        } finally {
+            client.close();
+            if (server != null) await(server.close());
+            await(vertx.close());
+        }
+    }
+
     private static PageBuilderOptions options(
             String rootURLPath,
             String rootMarkdownFilePath,

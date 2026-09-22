@@ -12,8 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,7 +29,7 @@ import java.util.jar.JarEntry;
 public class CataloguePageBuilder implements FastDocsContentResponder {
     private final PageBuilderOptions options;
     private final boolean embedded;
-    private final String actualFileRootOutsideJAR;
+    private final @Nullable Path actualFileRootOutsideJAR;
     private final @Nullable String catalogueDivContent;
 
     /**
@@ -57,7 +56,11 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
             throw new IllegalArgumentException("rootMarkdownFilePath is not available in File System");
         }
         this.embedded = x.toString().contains("!/");
-        this.actualFileRootOutsideJAR = x.getPath();
+        try {
+            this.actualFileRootOutsideJAR = embedded ? null : Path.of(x.toURI());
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid Markdown resource URI", e);
+        }
     }
 
     @Override
@@ -172,8 +175,8 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
     protected String getPageTitle() {
         return HtmlEscaper.escape(options.subjectOfDocuments
                 + " - " +
-                URLDecoder.decode(options.ctx.request().path()
-                                             .substring(this.options.rootURLPath.length()), StandardCharsets.UTF_8));
+                FastDocsPathCodec.decodePath(options.ctx.request().path()
+                                             .substring(this.options.rootURLPath.length())));
     }
 
     protected String getCatalogueDivContent() {
@@ -286,7 +289,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         if (jarEntry.isDirectory()) {
             href = jarEntry.getName().substring(options.rootMarkdownFilePath.length()) + "/index.md";
             level = Path.of(href).getNameCount() - 1;
-            href = (options.rootURLPath + href).replaceAll("/+", "/");
+            href = (options.rootURLPath + FastDocsPathCodec.encodePath(href)).replaceAll("/+", "/");
 
             List<JarEntry> jarEntries = FileUtils.traversalInRunningJar(jarEntry.getName());
             for (var childJarEntry : jarEntries) {
@@ -303,13 +306,13 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
             }
             href = jarEntry.getName().substring(options.rootMarkdownFilePath.length());
             level = Path.of(href).getNameCount();
-            href = (options.rootURLPath + href).replaceAll("/+", "/");
+            href = (options.rootURLPath + FastDocsPathCodec.encodePath(href)).replaceAll("/+", "/");
         }
         return new TreeNode(href, name, level, children);
     }
 
     protected TreeNode buildTreeOutsideJAR() {
-        File root = new File(actualFileRootOutsideJAR);
+        File root = Objects.requireNonNull(actualFileRootOutsideJAR).toFile();
 
         List<TreeNode> children = new ArrayList<>();
 
@@ -330,7 +333,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
 
     private @Nullable TreeNode buildTreeNodeOutsideJar(File item) {
         // options.eventLogger.debug(r -> r.message("buildTreeNodeOutsideJar " + item.getAbsolutePath()));
-        String base = new File(actualFileRootOutsideJAR).getAbsolutePath();
+        String base = Objects.requireNonNull(actualFileRootOutsideJAR).toFile().getAbsolutePath();
         String baseUrlPath = item.getAbsolutePath().substring(base.length());
         String href;
         int level;
@@ -338,7 +341,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
         if (item.isDirectory()) {
             href = baseUrlPath + "/index.md";
             level = Path.of(href).getNameCount() - 1;
-            href = (options.rootURLPath + href).replaceAll("/+", "/");
+            href = (options.rootURLPath + FastDocsPathCodec.encodePath(href)).replaceAll("/+", "/");
 
             File[] files = item.listFiles();
             if (files != null) {
@@ -354,7 +357,7 @@ public class CataloguePageBuilder implements FastDocsContentResponder {
             if (item.getName().equalsIgnoreCase("index.md")) {
                 return null;
             }
-            href = (options.rootURLPath + baseUrlPath)
+            href = (options.rootURLPath + FastDocsPathCodec.encodePath(baseUrlPath))
                     .replaceAll("/+", "/");
             level = Path.of(href).getNameCount();
         }
