@@ -28,6 +28,8 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
     private final String socketID;
     private final NetSocket socket;
     private final Funnel funnel;
+    private boolean debugPayloadLoggingEnabled;
+    private int debugPayloadMaxBytes = 256;
 
     private final LateObject<SpecificLogger<SocketSpecificLog>> lateLogger = new LateObject<>();
 
@@ -50,8 +52,14 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
                                       .handler(buffer -> {
                                           getLogger().info(eventLog -> eventLog
                                                   .message("READ BUFFER " + buffer.length() + " BYTES")
-                                                  .buffer(buffer)
+                                                  .bufferSummary(buffer)
                                           );
+                                          if (debugPayloadLoggingEnabled) {
+                                              getLogger().debug(eventLog -> eventLog
+                                                      .message("READ BUFFER PAYLOAD")
+                                                      .bufferPayload(buffer, debugPayloadMaxBytes)
+                                              );
+                                          }
 
                                           this.funnel.add(() -> whenBufferComes(buffer));
                                       })
@@ -195,6 +203,31 @@ abstract public class KeelAbstractSocketWrapper extends KeelVerticleBase {
 
     public KeelAbstractSocketWrapper setMaxSize(int maxSize) {
         this.socket.setWriteQueueMaxSize(maxSize);
+        return this;
+    }
+
+    /**
+     * Enables or disables payload logging at DEBUG level. Payload logging is disabled by default.
+     *
+     * @param enabled whether payload logging is enabled
+     * @return this wrapper
+     */
+    public KeelAbstractSocketWrapper setDebugPayloadLoggingEnabled(boolean enabled) {
+        this.debugPayloadLoggingEnabled = enabled;
+        return this;
+    }
+
+    /**
+     * Sets the maximum number of payload bytes captured in each DEBUG log entry.
+     *
+     * @param maxBytes positive maximum payload size
+     * @return this wrapper
+     */
+    public KeelAbstractSocketWrapper setDebugPayloadMaxBytes(int maxBytes) {
+        if (maxBytes <= 0) {
+            throw new IllegalArgumentException("maxBytes must be positive");
+        }
+        this.debugPayloadMaxBytes = maxBytes;
         return this;
     }
 }

@@ -1,6 +1,5 @@
 package io.github.sinri.keel.web.http.receptionist.responder;
 
-import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.core.utils.value.ValueBox;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.github.sinri.keel.web.http.receptionist.ReceptionistSpecificLog;
@@ -10,7 +9,6 @@ import io.vertx.ext.web.RoutingContext;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 
 
 /**
@@ -50,20 +48,35 @@ class KeelWebResponderCommonApiImpl extends AbstractKeelWebResponder<JsonObject>
 
     @Override
     public void respondOnFailure(KeelWebApiError webApiError, @Nullable ValueBox<?> dataValueBox) {
-        JsonObject resp;
+        getLogger().error(log -> {
+            log.extra().put("request_id", readRequestID());
+            log.message("Web API request failed").exception(webApiError);
+        });
+        JsonObject resp = buildResponseBody(Code.FAILED, null)
+                .put("throwable", new JsonObject()
+                        .put("class", webApiError.getClass().getName())
+                        .put("message", webApiError.getMessage()));
+        String encoded;
         try {
-            Objects.requireNonNull(dataValueBox);
-            var v = dataValueBox.getNonNullValue();
-            resp = buildResponseBody(Code.FAILED, new JsonObject().put("extra", v));
+            if (dataValueBox != null) {
+                resp.put("data", new JsonObject().put("extra", dataValueBox.getNonNullValue()));
+            }
+            encoded = resp.encode();
         } catch (Throwable e) {
-            resp = buildResponseBody(Code.FAILED, new JsonObject().put("extra_render_error", webApiError.getMessage()));
+            getLogger().error(log -> {
+                log.extra().put("request_id", readRequestID());
+                log.message("Failed to render Web API error extra").exception(e);
+            });
+            resp.put("data", new JsonObject().put("extra_render_error", "Unable to render extra data"));
+            encoded = resp.encode();
         }
-        resp.put("throwable", JsonifiedThrowable.wrap(webApiError).toJsonObject());
         recordResponseVerbosely(resp);
         if (webApiError.getStatusCode() != 200) {
             getRoutingContext().response().setStatusCode(webApiError.getStatusCode());
         }
-        getRoutingContext().json(resp);
+        getRoutingContext().response()
+                .putHeader(HttpHeaders.CONTENT_TYPE, contentTypeToRespond())
+                .end(encoded);
     }
 
     protected final JsonObject buildResponseBody(Code code, @Nullable JsonObject data) {

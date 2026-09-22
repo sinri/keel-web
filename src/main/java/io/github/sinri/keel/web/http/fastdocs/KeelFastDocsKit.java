@@ -1,6 +1,7 @@
 package io.github.sinri.keel.web.http.fastdocs;
 
 import io.github.sinri.keel.web.http.fastdocs.page.CataloguePageBuilder;
+import io.github.sinri.keel.web.http.fastdocs.page.FastDocsPathCodec;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownCssBuilder;
 import io.github.sinri.keel.web.http.fastdocs.page.MarkdownPageBuilder;
 import io.vertx.core.Future;
@@ -9,10 +10,10 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -27,28 +28,72 @@ public class KeelFastDocsKit {
     private final StaticHandler staticHandler;
     private final String rootURLPath;
     private final String rootMarkdownFilePath;
+    private final Object catalogueCacheLock = new Object();
 
     private String documentSubject = "FastDocs";
     private String footerText = "Public Domain";
+    private volatile CataloguePageBuilder.@Nullable TreeNode catalogueTreeCache;
+    private volatile @Nullable String standaloneCatalogueDivContentCache;
+    private volatile @Nullable String inDocumentCatalogueDivContentCache;
 
     /**
-     * @param rootURLPath          such as `/prefix/`
-     * @param rootMarkdownFilePath such as `path/to/dir/`
+     * Creates a FastDocs site backed by a Markdown resource directory. The Markdown root
+     * may be supplied with or without a trailing slash. Internally, the Markdown reader
+     * keeps one trailing slash for resource-name concatenation, while the static resource
+     * handler uses the same root without trailing slashes.
+     *
+     * @param rootURLPath such as {@code /prefix/}
+     * @param rootMarkdownFilePath such {@code path/to/dir}
+     * @throws IllegalArgumentException if {@code rootMarkdownFilePath} is empty
      */
     public KeelFastDocsKit(String rootURLPath, String rootMarkdownFilePath) {
-        this.staticHandler = StaticHandler.create();
+        String normalizedMarkdownRoot = normalizeMarkdownRoot(rootMarkdownFilePath);
+        this.staticHandler = StaticHandler.create(normalizeStaticRoot(normalizedMarkdownRoot));
         this.rootURLPath = rootURLPath;
-        this.rootMarkdownFilePath = rootMarkdownFilePath;
+        this.rootMarkdownFilePath = normalizedMarkdownRoot;
     }
 
     /**
-     * If you want to install a route for FastDocs in a certain Router, which mounts URL
-     * `[schema]://[domain]/fast-docs/*` to the directory contains markdown files in `resources` as `webroot/markdown/*`
-     * .
+     * Normalizes the root used when Markdown resource names are concatenated.
      *
-     * @param router          Router
-     * @param urlPathBase     such as `/fast-docs/`
-     * @param docsDirPathBase such as `webroot/markdown/`
+     * @param rootMarkdownFilePath configured Markdown resource root
+     * @return the resource root with exactly one trailing slash
+     * @throws IllegalArgumentException if the configured root is empty
+     */
+    private static String normalizeMarkdownRoot(String rootMarkdownFilePath) {
+        String staticRoot = normalizeStaticRoot(rootMarkdownFilePath);
+        if (staticRoot.isEmpty()) {
+            throw new IllegalArgumentException("rootMarkdownFilePath cannot be empty");
+        }
+        return staticRoot + "/";
+    }
+
+    /**
+     * Converts the Markdown resource root to the form expected by Vert.x's static handler.
+     * Markdown paths retain their trailing slash for resource-name concatenation, whereas
+     * the static handler appends a request path that already starts with a slash.
+     *
+     * @param rootMarkdownFilePath Markdown resource root configured for this FastDocs site
+     * @return the resource root without trailing slashes
+     */
+    private static String normalizeStaticRoot(String rootMarkdownFilePath) {
+        int end = rootMarkdownFilePath.length();
+        while (end > 0 && rootMarkdownFilePath.charAt(end - 1) == '/') {
+            end--;
+        }
+        return rootMarkdownFilePath.substring(0, end);
+    }
+
+    /**
+     * Installs a FastDocs site into a router. The URL base and Markdown resource root may
+     * be supplied with or without trailing slashes; both are normalized before requests
+     * are handled.
+     *
+     * @param router router on which the FastDocs wildcard route is installed
+     * @param urlPathBase URL base such as {@code /fast-docs/}
+     * @param docsDirPathBase classpath resource root such as {@code webroot/markdown/}
+     * @param subject document subject displayed in generated pages
+     * @param footer footer text displayed in generated pages
      */
     public static void installToRouter(
             Router router,
@@ -60,10 +105,6 @@ public class KeelFastDocsKit {
         if (!urlPathBase.endsWith("/")) {
             urlPathBase = urlPathBase + "/";
         }
-        if (!docsDirPathBase.endsWith("/")) {
-            docsDirPathBase = docsDirPathBase + "/";
-        }
-
         KeelFastDocsKit keelFastDocsKit = new KeelFastDocsKit(urlPathBase, docsDirPathBase)
                 .setDocumentSubject(subject)
                 .setFooterText(footer);
@@ -72,11 +113,23 @@ public class KeelFastDocsKit {
               .handler(keelFastDocsKit::processRouterRequest);
     }
 
+    /**
+     * Sets the document subject before this site starts serving requests.
+     *
+     * @param documentSubject document subject displayed in generated pages
+     * @return this kit
+     */
     public KeelFastDocsKit setDocumentSubject(String documentSubject) {
         this.documentSubject = documentSubject;
         return this;
     }
 
+    /**
+     * Sets the footer text for generated pages.
+     *
+     * @param footerText footer text displayed in generated pages
+     * @return this kit
+     */
     public KeelFastDocsKit setFooterText(String footerText) {
         this.footerText = footerText;
         return this;
@@ -116,16 +169,19 @@ public class KeelFastDocsKit {
         if (!requestPath.startsWith(this.rootURLPath)) {
             return Future.failedFuture("Not match url root");
         }
-        var raw = requestPath.substring(this.rootURLPath.length());
-        var decoded = URLDecoder.decode(raw, StandardCharsets.UTF_8);
+        try {
+            var raw = requestPath.substring(this.rootURLPath.length());
+            var decoded = FastDocsPathCodec.decodePath(raw);
 
-        // Prevent path traversal: normalize and verify the path stays within the root
-        Path normalized = Path.of(decoded).normalize();
-        if (normalized.startsWith("..") || normalized.isAbsolute()) {
-            return Future.failedFuture("Invalid path: traversal detected");
+            // Validate after decoding so encoded traversal cannot escape the resource root.
+            Path normalized = Path.of(decoded).normalize();
+            if (normalized.startsWith("..") || normalized.isAbsolute()) {
+                return Future.failedFuture("Invalid path: traversal detected");
+            }
+            return Future.succeededFuture(normalized.toString());
+        } catch (IllegalArgumentException e) {
+            return Future.failedFuture(e);
         }
-
-        return Future.succeededFuture(normalized.toString());
     }
 
     protected void processRequestWithMarkdownPath(PageBuilderOptions options) {
@@ -158,12 +214,52 @@ public class KeelFastDocsKit {
 
     protected void processRequestWithCatalogue(PageBuilderOptions options) {
         options.fromDoc = options.ctx.request().getParam("from_doc");
-        new CataloguePageBuilder(options).respond()
+        String catalogueDivContent = getCatalogueDivContent(options);
+        new CataloguePageBuilder(options, catalogueDivContent).respond()
                 .onFailure(throwable -> {
                     if (!options.ctx.response().ended()) {
                         options.ctx.response().setStatusCode(500).end();
                     }
                 });
+    }
+
+    /**
+     * Returns the cached catalogue body for the requested display mode. The document tree
+     * is read once per kit instance, while standalone and in-document HTML are rendered and
+     * cached separately.
+     *
+     * @param options page options for the current catalogue request
+     * @return cached or newly rendered catalogue HTML
+     */
+    String getCatalogueDivContent(PageBuilderOptions options) {
+        boolean embeddedInDocument = options.fromDoc != null && !options.fromDoc.isEmpty();
+        String cached = embeddedInDocument
+                ? inDocumentCatalogueDivContentCache
+                : standaloneCatalogueDivContentCache;
+        if (cached != null) {
+            return cached;
+        }
+
+        synchronized (catalogueCacheLock) {
+            cached = embeddedInDocument
+                    ? inDocumentCatalogueDivContentCache
+                    : standaloneCatalogueDivContentCache;
+            if (cached == null) {
+                CataloguePageBuilder builder = new CataloguePageBuilder(options);
+                CataloguePageBuilder.@Nullable TreeNode tree = catalogueTreeCache;
+                if (tree == null) {
+                    tree = builder.buildCatalogueTree();
+                    catalogueTreeCache = tree;
+                }
+                cached = builder.buildCatalogueDivContent(tree);
+                if (embeddedInDocument) {
+                    inDocumentCatalogueDivContentCache = cached;
+                } else {
+                    standaloneCatalogueDivContentCache = cached;
+                }
+            }
+            return cached;
+        }
     }
 
     protected void processRequestWithMarkdownCSS(PageBuilderOptions options) {
