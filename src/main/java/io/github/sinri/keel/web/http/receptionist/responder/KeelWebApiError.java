@@ -5,7 +5,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * 处理网络接口请求时发生错误
+ * 处理网络接口请求时发生错误。
+ * <p>
+ * 显式构造的异常消息会公开给客户端，调用方应确保消息适合公开；cause 仅用于服务端诊断。
  *
  * @since 5.0.0
  */
@@ -28,6 +30,7 @@ public class KeelWebApiError extends RuntimeException {
 
     /**
      * 将一个非KeelWebApiError的异常包装为KeelWebApiError并以 500 返回。
+     * 使用固定的公开消息，原始异常保留在 cause 中。
      *
      * @param throwable WEB 处理过程中的异常
      * @return 包装好的 KeelWebApiError 实例
@@ -39,7 +42,7 @@ public class KeelWebApiError extends RuntimeException {
 
         return new KeelWebApiError(
                 500,
-                "Web API Error with message: " + throwable.getMessage(),
+                "Internal server error",
                 throwable
         );
     }
